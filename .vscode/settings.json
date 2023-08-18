@@ -1,10 +1,10 @@
 {
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "html",
-    "typescript",
-    "typescriptreact",
-    "svelte"
-  ],
+	"eslint.validate": [
+		"javascript",
+		"javascriptreact",
+		"html",
+		"typescript",
+		"typescriptreact",
+		"svelte"
+	]
 }
