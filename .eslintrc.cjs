@@ -26,5 +26,9 @@ module.exports = {
 				parser: '@typescript-eslint/parser'
 			}
 		}
-	]
+	],
+	rules: {
+		...require('./rules.cjs'),
+		'no-console': 'error'
+	}
 };
