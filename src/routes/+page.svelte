@@ -1,2 +1,10 @@
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
+<script lang="ts">
+	function onUpload(event: Event & { currentTarget: HTMLInputElement }) {
+		const files = event.currentTarget?.files ?? [];
+		for (const file of files) {
+			console.log(file);
+		}
+	}
+</script>
+
+<input on:change={onUpload} type="file" accept=".cbz, .zip, .cbr, .rar" multiple />
