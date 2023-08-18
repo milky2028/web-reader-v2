@@ -9,6 +9,7 @@
 		const files = getFiles(event);
 
 		for (const file of files) {
+			// eslint-disable-next-line no-console
 			console.log(file);
 		}
 	}
