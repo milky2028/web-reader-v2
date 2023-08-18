@@ -19,6 +19,9 @@ devDependencies:
   '@sveltejs/kit':
     specifier: ^1.20.4
     version: 1.22.6(svelte@4.2.0)(vite@4.4.9)
+  '@types/libarchive.js':
+    specifier: ^1.3.1
+    version: 1.3.1
   '@typescript-eslint/eslint-plugin':
     specifier: ^5.45.0
     version: 5.62.0(@typescript-eslint/parser@5.62.0)(eslint@8.47.0)(typescript@5.1.6)
@@ -495,6 +498,10 @@ packages:
 
   /@types/json-schema@7.0.12:
     resolution: {integrity: sha512-Hr5Jfhc9eYOQNPYO5WLDq/n4jqijdHNlDXjuAQkkt+mWdQR+XJToOHrsD4cPaMXpn6KO7y2+wM8AZEs8VpBLVA==}
+    dev: true
+
+  /@types/libarchive.js@1.3.1:
+    resolution: {integrity: sha512-ddCRDAyVftfnbNvEe77FrOSWMYoFI85xJKITQ5AnvfR330KmEHS48KOmhEncpZadxefh64TO6jk6g2oabxWupg==}
     dev: true
 
   /@types/node@20.5.0:
