@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { fileToImage } from '$lib/fileToImage';
 	import { isImage } from '$lib/isImage';
 	import { isMacOSFile } from '$lib/isMacOSFile';
@@ -54,9 +55,16 @@
 					pages.add(file.name, await fileToImage(file));
 				}
 			});
+
+			return bookName;
 		});
 
-		await Promise.all(extractFiles);
+		const [bookName] = await Promise.all(extractFiles);
+		if (files.length === 1) {
+			goto(`/book/${bookName}/page/0`);
+		} else {
+			goto('/books');
+		}
 	}
 
 	// eslint-disable-next-line no-console
