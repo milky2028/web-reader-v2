@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 
 function createPageStore() {
 	const { subscribe, update } = writable(new Map<string, string>());
@@ -10,7 +10,13 @@ function createPageStore() {
 		});
 	}
 
-	return { subscribe, add };
+	function getStaticPage(pageName: string) {
+		// eslint-disable-next-line no-use-before-define
+		const $pages = get(pages);
+		return $pages.get(pageName);
+	}
+
+	return { subscribe, add, getStaticPage };
 }
 
 export const pages = createPageStore();
