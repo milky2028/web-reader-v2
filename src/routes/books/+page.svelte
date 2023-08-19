@@ -9,6 +9,14 @@
 		margin: 0;
 		padding: 0;
 	}
+
+	li {
+		display: inline-block;
+	}
+
+	a {
+		padding: 0.25rem;
+	}
 </style>
 
 {#if $books.size > 0}
