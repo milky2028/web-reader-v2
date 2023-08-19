@@ -39,7 +39,8 @@
 			const bookName = file.name.slice(0, file.name.length - 4);
 			books.add(bookName, {
 				path: sortedPages[0]?.path ?? '',
-				pages: pageNames
+				pages: pageNames,
+				coverName: cover?.name ?? ''
 			});
 
 			if (cover instanceof CompressedFile) {
