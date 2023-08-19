@@ -1,18 +1,10 @@
 <script lang="ts">
-	function getFiles(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
-		const files =
-			event instanceof DragEvent ? event.dataTransfer?.files : event.currentTarget.files;
-		return Array.from(files ?? []);
-	}
-
-	function onUpload(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
-		const files = getFiles(event);
-
-		for (const file of files) {
-			// eslint-disable-next-line no-console
-			console.log(file);
-		}
-	}
+	import { fileToImage } from '$lib/fileToImage';
+	import { isImage } from '$lib/isImage';
+	import { isMacOSFile } from '$lib/isMacOSFile';
+	import { sortPagesCoverFirst } from '$lib/sortPages';
+	import { books } from '$lib/stores/books';
+	import { pages } from '$lib/stores/pages';
 
 	function onDragover(event: DragEvent) {
 		event.preventDefault();
@@ -21,6 +13,50 @@
 			event.dataTransfer.dropEffect = 'copy';
 		}
 	}
+
+	function getFiles(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
+		const files =
+			event instanceof DragEvent ? event.dataTransfer?.files : event.currentTarget.files;
+		return Array.from(files ?? []);
+	}
+
+	async function onUpload(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
+		const files = getFiles(event);
+		const { Archive, CompressedFile } = await import('$lib/archive');
+
+		const extractFiles = files.map(async (file) => {
+			const archive = await Archive.open(file);
+			const archivedFiles = await archive.getFilesArray();
+
+			const sortedPages = archivedFiles
+				.filter((page) => !isMacOSFile(page) && isImage(page))
+				.sort(sortPagesCoverFirst);
+
+			const cover = sortedPages[0]?.file;
+			const pageNames = sortedPages.map((page) => page.file.name);
+
+			const bookName = file.name.slice(0, file.name.length - 4);
+			books.add(bookName, {
+				path: sortedPages[0]?.path ?? '',
+				pages: pageNames
+			});
+
+			if (cover instanceof CompressedFile) {
+				const [coverName] = pageNames;
+				if (coverName) {
+					const coverPage = await cover.extract();
+					pages.add(coverName, await fileToImage(coverPage));
+				}
+			}
+		});
+
+		await Promise.all(extractFiles);
+	}
+
+	// eslint-disable-next-line no-console
+	$: console.log($books);
+	// eslint-disable-next-line no-console
+	$: console.log($pages);
 </script>
 
 <style>
