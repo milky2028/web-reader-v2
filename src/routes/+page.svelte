@@ -48,6 +48,12 @@
 					pages.add(coverName, await fileToImage(coverPage));
 				}
 			}
+
+			archive.extractFiles(async ({ file }) => {
+				if (file.name !== cover?.name) {
+					pages.add(file.name, await fileToImage(file));
+				}
+			});
 		});
 
 		await Promise.all(extractFiles);
