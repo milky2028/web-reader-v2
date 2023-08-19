@@ -67,11 +67,6 @@
 			goto('/books');
 		}
 	}
-
-	// eslint-disable-next-line no-console
-	$: console.log($books);
-	// eslint-disable-next-line no-console
-	$: console.log($pages);
 </script>
 
 <style>
