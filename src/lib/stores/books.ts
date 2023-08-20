@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 
-type BookDetails = {
+export type BookDetails = {
 	path: string;
 	pages: string[];
 	coverName: string;
