@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { fileToImage } from '$lib/fileToImage';
+	import { writeFile } from '$lib/filesystem/writeFile';
 	import { isImage } from '$lib/isImage';
 	import { isMacOSFile } from '$lib/isMacOSFile';
 	import { sortPagesCoverFirst } from '$lib/sortPages';
@@ -48,12 +49,13 @@
 				if (coverName) {
 					const coverPage = await cover.extract();
 					pages.add(coverName, await fileToImage(coverPage));
+					writeFile(`/books/${bookName}/${cover?.name}`, coverPage);
 				}
 			}
 
-			archive.extractFiles(async ({ file }) => {
+			archive.extractFiles(({ file }) => {
 				if (file.name !== cover?.name) {
-					pages.add(file.name, await fileToImage(file));
+					writeFile(`/books/${bookName}/${file.name}`, file);
 				}
 			});
 
