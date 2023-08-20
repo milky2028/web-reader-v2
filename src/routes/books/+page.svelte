@@ -24,7 +24,12 @@
 		{#each $books as [bookName, book]}
 			<li>
 				<a href="/book/{bookName}/page/0">
-					<img src={pages.getStaticPage(book.coverName)} loading="lazy" alt="" width="200" />
+					<img
+						src={pages.getStaticPage(book.coverName)}
+						loading="lazy"
+						alt={bookName}
+						width="200"
+					/>
 				</a>
 			</li>
 		{/each}
