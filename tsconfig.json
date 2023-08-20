@@ -16,7 +16,6 @@
 		"allowUnusedLabels": false,
 		"exactOptionalPropertyTypes": true,
 		"noImplicitOverride": true,
-		"noUncheckedIndexedAccess": true,
 		"useUnknownInCatchVariables": true
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
