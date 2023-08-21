@@ -3,8 +3,11 @@
 	import { pages } from '$lib/stores/pages';
 	import { derived } from 'svelte/store';
 
-	const covers = derived([books, pages], ([$books, $pages]) =>
-		[...$books].map(([bookName, book]) => ({ bookName, coverImg: $pages.get(book.coverName) }))
+	const covers = derived([books, pages], ([$books, _$pages]) =>
+		[...$books].map(async ([bookName, book]) => ({
+			bookName,
+			coverImg: await pages.getPage(bookName, book.coverName)
+		}))
 	);
 </script>
 
@@ -26,12 +29,16 @@
 
 {#if $books.size > 0}
 	<ul>
-		{#each $covers as { bookName, coverImg } (bookName)}
-			<li>
-				<a href="/book/{bookName}/page/0">
-					<img src={coverImg} loading="lazy" alt={bookName} width="200" />
-				</a>
-			</li>
+		{#each $covers as cover}
+			{#await cover}
+				<li>Loading...</li>
+			{:then { bookName, coverImg }}
+				<li>
+					<a href="/book/{bookName}/page/0">
+						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
+					</a>
+				</li>
+			{/await}
 		{/each}
 	</ul>
 {:else}
