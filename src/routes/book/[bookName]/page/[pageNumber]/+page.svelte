@@ -30,21 +30,38 @@
 		]);
 
 		const imgIsTwoPageSpread = oneIs || twoIs;
-		showingTwoPages = $isLandscapeMode && pageNumber !== 0 && !imgIsTwoPageSpread;
+		showingTwoPages =
+			$isLandscapeMode && pageNumber !== 0 && pageNumber !== lastPage && !imgIsTwoPageSpread;
 	})();
 
 	let numberOfPagesToIncrement = 1;
 	$: numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
 
-	function onArrow({ key }: KeyboardEvent) {
+	async function onArrow({ key }: KeyboardEvent) {
 		if (key === 'ArrowRight') {
+			const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
+
 			const nextPage =
-				pageNumber + 1 >= lastPage ? lastPage : pageNumber + numberOfPagesToIncrement;
-			goto(`/book/${bookName}/page/${nextPage}`);
+				pageNumber + numberOfPagesToIncrement >= lastPage
+					? pageNumber
+					: pageNumber + numberOfPagesToIncrement;
+
+			if (nextPage !== pageNumber) {
+				await Promise.all([
+					pages.getPage($books, bookName, pageNumber + numberOfPagesToIncrement),
+					pages.getPage($books, bookName, pageNumber + numberOfPagesToIncrement + 1)
+				]);
+
+				goto(`/book/${bookName}/page/${nextPage}`);
+			}
 		}
 
 		if (key === 'ArrowLeft') {
-			const previousPage = pageNumber - 1 <= 0 ? 0 : pageNumber - numberOfPagesToIncrement;
+			const showingOnePage = !showingTwoPages;
+			const numberOfPagesToGoBack = showingOnePage ? 2 : 1;
+
+			const previousPage =
+				pageNumber - numberOfPagesToGoBack <= 0 ? 0 : pageNumber - numberOfPagesToGoBack;
 			goto(`/book/${bookName}/page/${previousPage}`);
 		}
 	}
