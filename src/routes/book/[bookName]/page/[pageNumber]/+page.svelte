@@ -11,7 +11,8 @@
 		pageNumber = +$page.params.pageNumber;
 	}
 
-	const lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
+	let lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
+	$: lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
 
 	function onArrow({ key }: KeyboardEvent) {
 		if (key === 'ArrowRight') {
