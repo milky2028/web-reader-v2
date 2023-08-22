@@ -6,7 +6,8 @@ export async function writeFile(path: string, file: File) {
 	const fileHandle = await getFileHandle(path, { create: true });
 	if ('createWritable' in fileHandle) {
 		const writer = await fileHandle.createWritable();
-		return file.stream().pipeTo(writer);
+		await file.stream().pipeTo(writer);
+		return writer.close();
 	}
 
 	return new Promise<void>((resolve, reject) => {
