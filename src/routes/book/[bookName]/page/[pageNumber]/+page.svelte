@@ -28,6 +28,11 @@
 			goto(`/book/${bookName}/page/${previousPage}`);
 		}
 	}
+
+	let pageContainer: HTMLDivElement | undefined;
+	function onFullscreen() {
+		pageContainer?.requestFullscreen();
+	}
 </script>
 
 <style>
@@ -49,8 +54,9 @@
 	}
 </style>
 
+<button on:click={onFullscreen}>Fullscreen</button>
 <svelte:window on:keyup={onArrow} />
-<div class="page-container">
+<div bind:this={pageContainer} class="page-container">
 	{#await leftPage}
 		<div class="loader">Loading...</div>
 	{:then page}
