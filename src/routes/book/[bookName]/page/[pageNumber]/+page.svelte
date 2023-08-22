@@ -34,9 +34,6 @@
 			$isLandscapeMode && pageNumber !== 0 && pageNumber !== lastPage && !imgIsTwoPageSpread;
 	})();
 
-	let numberOfPagesToIncrement = 1;
-	$: numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
-
 	async function onArrow({ key }: KeyboardEvent) {
 		if (key === 'ArrowRight') {
 			const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
@@ -59,7 +56,7 @@
 		if (key === 'ArrowLeft') {
 			const previousPageUrl = await pages.getPage($books, bookName, pageNumber - 1);
 			const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
-			const numberOfPagesToGoBack = previousPageIsTwoPageSpread ? 1 : 2;
+			const numberOfPagesToGoBack = previousPageIsTwoPageSpread || isLandscapeMode ? 1 : 2;
 
 			const previousPage =
 				pageNumber - numberOfPagesToGoBack <= 0 ? 0 : pageNumber - numberOfPagesToGoBack;
