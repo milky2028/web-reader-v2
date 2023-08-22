@@ -95,6 +95,7 @@
 	}
 </style>
 
+<a href="/book/{bookName}">Pages</a>
 <button on:click={onFullscreen}>Fullscreen</button>
 <svelte:window on:keyup={onArrow} />
 <div bind:this={pageContainer} class="page-container" class:showingTwoPages>
