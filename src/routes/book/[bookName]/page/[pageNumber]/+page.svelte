@@ -57,8 +57,9 @@
 		}
 
 		if (key === 'ArrowLeft') {
-			const showingOnePage = !showingTwoPages;
-			const numberOfPagesToGoBack = showingOnePage ? 2 : 1;
+			const previousPageUrl = await pages.getPage($books, bookName, pageNumber - 1);
+			const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
+			const numberOfPagesToGoBack = previousPageIsTwoPageSpread ? 1 : 2;
 
 			const previousPage =
 				pageNumber - numberOfPagesToGoBack <= 0 ? 0 : pageNumber - numberOfPagesToGoBack;
