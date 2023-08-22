@@ -33,11 +33,10 @@ function createPageStore() {
 					add(pageName, url);
 					return url;
 				} catch (e) {
-					if (e instanceof Error && e.message === 'invalid-path') {
-						return '';
-					}
+					return '';
 				}
 			}
+
 			return url;
 		}
 

@@ -14,6 +14,9 @@
 	let lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
 	$: lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
 
+	let leftPage = Promise.resolve('');
+	$: leftPage = pages.getPage($books, bookName, pageNumber);
+
 	function onArrow({ key }: KeyboardEvent) {
 		if (key === 'ArrowRight') {
 			const nextPage = pageNumber + 1 >= lastPage ? lastPage : pageNumber + 1;
@@ -27,9 +30,30 @@
 	}
 </script>
 
+<style>
+	.page-container {
+		display: grid;
+		column-gap: 0.5rem;
+		grid-template-columns: 1fr min-content 1fr;
+		grid-template-areas: 'space1 page1 space2';
+	}
+
+	.loader {
+		grid-area: page1;
+		align-self: center;
+	}
+
+	img {
+		max-height: calc(100vh - 40px);
+		min-height: calc(100vh - 40px);
+	}
+</style>
+
 <svelte:window on:keyup={onArrow} />
-{#await pages.getPage($books, bookName, pageNumber)}
-	<div>Loading...</div>
-{:then page}
-	<img src={page} alt="" width="700" />
-{/await}
+<div class="page-container">
+	{#await leftPage}
+		<div class="loader">Loading...</div>
+	{:then page}
+		<img style="grid-area: page1;" src={page} alt="" />
+	{/await}
+</div>
