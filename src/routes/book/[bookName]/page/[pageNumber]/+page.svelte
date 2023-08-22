@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
+	import { isLandscapeMode } from '$lib/isLandscape';
+	import { isTwoPageSpread } from '$lib/isTwoPageSpread';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
 
@@ -17,14 +19,32 @@
 	let leftPage = Promise.resolve('');
 	$: leftPage = pages.getPage($books, bookName, pageNumber);
 
+	let rightPage = Promise.resolve('');
+	$: rightPage = pages.getPage($books, bookName, pageNumber + 1);
+
+	let showingTwoPages = false;
+	$: (async () => {
+		const [oneIs, twoIs] = await Promise.all([
+			leftPage.then(isTwoPageSpread),
+			rightPage.then(isTwoPageSpread)
+		]);
+
+		const imgIsTwoPageSpread = oneIs || twoIs;
+		showingTwoPages = $isLandscapeMode && pageNumber !== 0 && !imgIsTwoPageSpread;
+	})();
+
+	let numberOfPagesToIncrement = 1;
+	$: numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
+
 	function onArrow({ key }: KeyboardEvent) {
 		if (key === 'ArrowRight') {
-			const nextPage = pageNumber + 1 >= lastPage ? lastPage : pageNumber + 1;
+			const nextPage =
+				pageNumber + 1 >= lastPage ? lastPage : pageNumber + numberOfPagesToIncrement;
 			goto(`/book/${bookName}/page/${nextPage}`);
 		}
 
 		if (key === 'ArrowLeft') {
-			const previousPage = pageNumber - 1 <= 0 ? 0 : pageNumber - 1;
+			const previousPage = pageNumber - 1 <= 0 ? 0 : pageNumber - numberOfPagesToIncrement;
 			goto(`/book/${bookName}/page/${previousPage}`);
 		}
 	}
@@ -43,8 +63,12 @@
 		grid-template-areas: 'space1 page1 space2';
 	}
 
+	.showingTwoPages {
+		grid-template-columns: 1fr min-content min-content 1fr;
+		grid-template-areas: 'space1 page1 page2 space2';
+	}
+
 	.loader {
-		grid-area: page1;
 		align-self: center;
 	}
 
@@ -56,10 +80,17 @@
 
 <button on:click={onFullscreen}>Fullscreen</button>
 <svelte:window on:keyup={onArrow} />
-<div bind:this={pageContainer} class="page-container">
+<div bind:this={pageContainer} class="page-container" class:showingTwoPages>
 	{#await leftPage}
-		<div class="loader">Loading...</div>
+		<div class="loader" style="grid-area: page1;">Loading...</div>
 	{:then page}
 		<img style="grid-area: page1;" src={page} alt="" />
 	{/await}
+	{#if showingTwoPages}
+		{#await rightPage}
+			<div class="loader" style="grid-area: page2;">Loading...</div>
+		{:then page}
+			<img style="grid-area: page2;" src={page} alt="" />
+		{/await}
+	{/if}
 </div>
