@@ -2,6 +2,7 @@
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
 	import { books } from '$lib/stores/books';
+	import { pages } from '$lib/stores/pages';
 
 	let { bookName } = $page.params;
 	let pageNumber = +$page.params.pageNumber;
@@ -26,5 +27,8 @@
 </script>
 
 <svelte:window on:keyup={onArrow} />
-{bookName}
-{pageNumber}
+{#await pages.getPage($books, bookName, pageNumber)}
+	<div>Loading...</div>
+{:then page}
+	<img src={page} alt="" width="700" />
+{/await}

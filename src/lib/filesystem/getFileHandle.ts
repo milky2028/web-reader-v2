@@ -2,8 +2,8 @@ export async function getFileHandle(path: string, { create = false } = {}) {
 	const segments = path.split('/').filter(Boolean);
 	const fileName = segments.pop();
 
-	if (!fileName) {
-		throw new Error('Path is invalid.');
+	if (!fileName || path.endsWith('/')) {
+		throw new Error('invalid-path');
 	}
 
 	let directory = await navigator.storage.getDirectory();

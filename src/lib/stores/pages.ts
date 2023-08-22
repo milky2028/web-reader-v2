@@ -1,5 +1,7 @@
+import { browser } from '$app/environment';
 import { createPage } from '$lib/createPage';
 import { writable, get } from 'svelte/store';
+import type { BookDetails } from './books';
 
 function createPageStore() {
 	const { subscribe, update } = writable(new Map<string, string>());
@@ -11,15 +13,35 @@ function createPageStore() {
 		});
 	}
 
-	function getPage(bookName: string, pageName: string) {
-		// eslint-disable-next-line no-use-before-define
-		const $pages = get(pages);
-		const url = $pages.get(pageName);
-		if (!url) {
-			return createPage(bookName, pageName);
+	async function getPage(
+		$books: Map<string, BookDetails>,
+		bookName: string,
+		pageNameOrNumber: string | number
+	) {
+		if (browser) {
+			let pageName = pageNameOrNumber;
+			if (typeof pageName === 'number') {
+				pageName = $books.get(bookName)?.pages[pageName] ?? '';
+			}
+
+			// eslint-disable-next-line no-use-before-define
+			const $pages = get(pages);
+			let url = $pages.get(pageName);
+			if (!url) {
+				try {
+					url = await createPage(bookName, pageName);
+					add(pageName, url);
+					return url;
+				} catch (e) {
+					if (e instanceof Error && e.message === 'invalid-path') {
+						return '';
+					}
+				}
+			}
+			return url;
 		}
 
-		return url;
+		return '';
 	}
 
 	return { subscribe, add, getPage };

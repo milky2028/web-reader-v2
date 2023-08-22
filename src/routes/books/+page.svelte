@@ -6,7 +6,7 @@
 	const covers = derived([books, pages], ([$books, _$pages]) =>
 		[...$books].map(async ([bookName, book]) => ({
 			bookName,
-			coverImg: await pages.getPage(bookName, book.coverName)
+			coverImg: await pages.getPage($books, bookName, book.coverName)
 		}))
 	);
 </script>
