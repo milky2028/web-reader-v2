@@ -9,6 +9,7 @@ self.addEventListener('message', async ({ data: { path, file } }: WriteEvent) =>
 		const syncHandle = await fileHandle.createSyncAccessHandle();
 
 		const buffer = await file.arrayBuffer();
+		syncHandle.truncate(0);
 		syncHandle.write(buffer, { at: 0 });
 
 		syncHandle.flush();
