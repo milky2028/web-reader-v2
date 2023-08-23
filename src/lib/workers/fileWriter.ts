@@ -2,8 +2,8 @@
 
 import { getFileHandle } from '$lib/filesystem/getFileHandle';
 
-type WriteEvent = MessageEvent<{ path: string; file: File }>;
-self.addEventListener('message', async ({ data: { path, file } }: WriteEvent) => {
+type WriteEvent = MessageEvent<{ path: string; file: File; id: string }>;
+self.addEventListener('message', async ({ data: { path, file, id } }: WriteEvent) => {
 	try {
 		const fileHandle = await getFileHandle(path, { create: true });
 		const syncHandle = await fileHandle.createSyncAccessHandle();
@@ -13,13 +13,14 @@ self.addEventListener('message', async ({ data: { path, file } }: WriteEvent) =>
 		syncHandle.write(buffer, { at: 0 });
 
 		syncHandle.flush();
-		await syncHandle.close();
-		self.postMessage('completed');
+		syncHandle.close();
+
+		self.postMessage({ returnVal: 'completed', id });
 	} catch (e) {
 		if (e instanceof Error) {
-			self.postMessage(e.message);
+			self.postMessage({ returnVal: e.message, id });
 		}
 
-		self.postMessage('failed');
+		self.postMessage({ returnVal: 'failed', id });
 	}
 });
