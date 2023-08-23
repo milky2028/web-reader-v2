@@ -24,7 +24,11 @@
 
 	async function onUpload(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
 		const files = getFiles(event);
-		const { Archive, CompressedFile } = await import('$lib/archive');
+
+		const [{ Archive, CompressedFile }] = await Promise.all([
+			import('$lib/archive'),
+			navigator.storage.persist()
+		]);
 
 		const extractFiles = files.map(async (file) => {
 			const archive = await Archive.open(file);
