@@ -4,15 +4,24 @@
 	import { pages } from '$lib/stores/pages';
 	import { derived } from 'svelte/store';
 
-	const book = derived([books, page], ([$books, $page]) => $books.get($page.params.bookName));
+	const renderablePages = derived([books, page], ([$books, $page]) => {
+		const book = $books.get($page.params.bookName);
+		if (book) {
+			return Promise.all(
+				book.pages.map((pageName) => pages.getPage($books, $page.params.bookName, pageName))
+			);
+		}
+
+		return [];
+	});
 </script>
 
-{#each $book?.pages ?? [] as pageName, i (pageName)}
-	<a href="/book/{$page.params.bookName}/page/{i}">
-		{#await pages.getPage($books, $page.params.bookName, pageName)}
-			<div>Loading...</div>
-		{:then page}
-			<img src={page} alt="" loading="lazy" width="200" />
-		{/await}</a
-	>
-{/each}
+{#await $renderablePages}
+	<div>Loading...</div>
+{:then bookPages}
+	{#each bookPages as bookPage, i}
+		<a href="/book/{$page.params.bookName}/page/{i}">
+			<img src={bookPage} alt="" loading="lazy" width="200" />
+		</a>
+	{/each}
+{/await}
