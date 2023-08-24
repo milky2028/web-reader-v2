@@ -5,10 +5,12 @@
 
 	const covers = derived([books, pages], ([$books, _$pages]) =>
 		Promise.all(
-			[...$books].map(async ([bookName, book]) => ({
-				bookName,
-				coverImg: await pages.getPage($books, bookName, book.coverName)
-			}))
+			[...$books]
+				.sort(([bookNameA], [bookNameB]) => bookNameA.localeCompare(bookNameB))
+				.map(async ([bookName, book]) => ({
+					bookName,
+					coverImg: await pages.getPage($books, bookName, book.coverName)
+				}))
 		)
 	);
 </script>
