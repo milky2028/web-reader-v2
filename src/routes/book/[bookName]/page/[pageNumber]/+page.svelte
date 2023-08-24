@@ -5,22 +5,21 @@
 	import { isTwoPageSpread } from '$lib/isTwoPageSpread';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
+	import { derived } from 'svelte/store';
 
-	let { bookName } = $page.params;
-	let pageNumber = +$page.params.pageNumber;
-	$: {
-		({ bookName } = $page.params);
-		pageNumber = +$page.params.pageNumber;
-	}
+	const bookName = derived(page, ($page) => $page.params.bookName);
+	const pageNumber = derived(page, ($page) => +$page.params.pageNumber);
 
-	let lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
-	$: lastPage = $books.get(bookName)?.pages.length ?? 1 - 1;
+	const lastPage = derived(
+		[books, bookName],
+		([$books, bookName]) => $books.get(bookName)?.pages.length ?? 1 - 1
+	);
 
 	let leftPage = Promise.resolve('');
-	$: leftPage = pages.getPage($books, bookName, pageNumber);
+	$: leftPage = pages.getPage($books, $bookName, $pageNumber);
 
 	let rightPage = Promise.resolve('');
-	$: rightPage = pages.getPage($books, bookName, pageNumber + 1);
+	$: rightPage = pages.getPage($books, $bookName, $pageNumber + 1);
 
 	let showingTwoPages = false;
 	$: (async () => {
@@ -31,7 +30,7 @@
 
 		const imgIsTwoPageSpread = oneIs || twoIs;
 		showingTwoPages =
-			$isLandscapeMode && pageNumber !== 0 && pageNumber !== lastPage && !imgIsTwoPageSpread;
+			$isLandscapeMode && $pageNumber !== 0 && pageNumber !== lastPage && !imgIsTwoPageSpread;
 	})();
 
 	async function onArrow({ key }: KeyboardEvent) {
@@ -39,14 +38,14 @@
 			const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
 
 			const nextPage =
-				pageNumber + numberOfPagesToIncrement >= lastPage
+				$pageNumber + numberOfPagesToIncrement >= $lastPage
 					? pageNumber
-					: pageNumber + numberOfPagesToIncrement;
+					: $pageNumber + numberOfPagesToIncrement;
 
 			if (nextPage !== pageNumber) {
 				await Promise.all([
-					pages.getPage($books, bookName, pageNumber + numberOfPagesToIncrement),
-					pages.getPage($books, bookName, pageNumber + numberOfPagesToIncrement + 1)
+					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement),
+					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
 				]);
 
 				goto(`/book/${bookName}/page/${nextPage}`);
@@ -54,12 +53,12 @@
 		}
 
 		if (key === 'ArrowLeft') {
-			const previousPageUrl = await pages.getPage($books, bookName, pageNumber - 1);
+			const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
 			const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
 			const numberOfPagesToGoBack = isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
 
 			const previousPage =
-				pageNumber - numberOfPagesToGoBack <= 0 ? 0 : pageNumber - numberOfPagesToGoBack;
+				$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
 			goto(`/book/${bookName}/page/${previousPage}`);
 		}
 	}
