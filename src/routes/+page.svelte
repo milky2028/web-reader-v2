@@ -95,6 +95,6 @@
 
 <div class="container">
 	<div role="button" tabindex="0" on:dragover={onDragover} on:drop={onUpload} class="drop-zone">
-		<input on:change={onUpload} type="file" accept=".cbz, .zip, .cbr, .rar" multiple />
+		<input on:change={onUpload} type="file" accept=".cbz, .zip, .cbr, .rar, application/vnd.rar, application/zip" multiple />
 	</div>
 </div>
