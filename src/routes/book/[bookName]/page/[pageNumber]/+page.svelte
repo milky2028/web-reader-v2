@@ -30,7 +30,7 @@
 
 		const imgIsTwoPageSpread = oneIs || twoIs;
 		showingTwoPages =
-			$isLandscapeMode && $pageNumber !== 0 && pageNumber !== lastPage && !imgIsTwoPageSpread;
+			$isLandscapeMode && $pageNumber !== 0 && $pageNumber !== $lastPage && !imgIsTwoPageSpread;
 	})();
 
 	async function onArrow({ key }: KeyboardEvent) {
@@ -39,16 +39,16 @@
 
 			const nextPage =
 				$pageNumber + numberOfPagesToIncrement >= $lastPage
-					? pageNumber
+					? $pageNumber
 					: $pageNumber + numberOfPagesToIncrement;
 
-			if (nextPage !== pageNumber) {
+			if (nextPage !== $pageNumber) {
 				await Promise.all([
 					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement),
 					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
 				]);
 
-				goto(`/book/${bookName}/page/${nextPage}`);
+				goto(`/book/${$bookName}/page/${nextPage}`);
 			}
 		}
 
@@ -59,7 +59,7 @@
 
 			const previousPage =
 				$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
-			goto(`/book/${bookName}/page/${previousPage}`);
+			goto(`/book/${$bookName}/page/${previousPage}`);
 		}
 	}
 
