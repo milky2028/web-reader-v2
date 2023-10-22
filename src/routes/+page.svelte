@@ -7,6 +7,7 @@
 	import { sortPagesCoverFirst } from '$lib/sortPages';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
+	import { unrarFallback } from '$lib/unrarFallback';
 
 	function onDragover(event: DragEvent) {
 		event.preventDefault();
@@ -57,11 +58,13 @@
 				}
 			}
 
-			archive.extractFiles(({ file }) => {
-				if (file.name !== cover?.name) {
-					writeFile(`/books/${bookName}/${file.name}`, file);
-				}
-			});
+			archive
+				.extractFiles(({ file }) => {
+					if (file.name !== cover?.name) {
+						writeFile(`/books/${bookName}/${file.name}`, file);
+					}
+				})
+				.catch(() => unrarFallback(file));
 
 			return bookName;
 		});
