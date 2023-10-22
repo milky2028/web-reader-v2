@@ -61,18 +61,28 @@
 	}
 
 	function onArrow({ key }: KeyboardEvent) {
-		if (key === 'ArrowRight') {
-			goRight();
-		}
-
 		if (key === 'ArrowLeft') {
 			goLeft();
 		}
+
+		if (key === 'ArrowRight') {
+			goRight();
+		}
 	}
 
-	function onClick() {}
-
 	let pageContainer: HTMLButtonElement | undefined;
+	function onClick(event: MouseEvent) {
+		if (pageContainer) {
+			const { left, width } = pageContainer.getBoundingClientRect();
+
+			if (event.clientX - left < width / 2) {
+				goLeft();
+			} else {
+				goRight();
+			}
+		}
+	}
+
 	function onFullscreen() {
 		pageContainer?.requestFullscreen();
 	}
