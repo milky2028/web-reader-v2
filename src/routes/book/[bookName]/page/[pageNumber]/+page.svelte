@@ -33,37 +33,46 @@
 			$isLandscapeMode && $pageNumber !== 0 && $pageNumber !== $lastPage && !imgIsTwoPageSpread;
 	})();
 
-	async function onArrow({ key }: KeyboardEvent) {
-		if (key === 'ArrowRight') {
-			const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
+	async function goLeft() {
+		const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
+		const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
+		const numberOfPagesToGoBack = isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
 
-			const nextPage =
-				$pageNumber + numberOfPagesToIncrement >= $lastPage
-					? $pageNumber
-					: $pageNumber + numberOfPagesToIncrement;
+		const previousPage =
+			$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
+		goto(`/book/${$bookName}/page/${previousPage}`);
+	}
 
-			if (nextPage !== $pageNumber) {
-				await Promise.all([
-					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement),
-					pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
-				]);
+	async function goRight() {
+		const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
+		const nextPage =
+			$pageNumber + numberOfPagesToIncrement >= $lastPage
+				? $pageNumber
+				: $pageNumber + numberOfPagesToIncrement;
 
-				goto(`/book/${$bookName}/page/${nextPage}`);
-			}
-		}
+		if (nextPage !== $pageNumber) {
+			await Promise.all([
+				pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement),
+				pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
+			]);
 
-		if (key === 'ArrowLeft') {
-			const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
-			const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
-			const numberOfPagesToGoBack = isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
-
-			const previousPage =
-				$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
-			goto(`/book/${$bookName}/page/${previousPage}`);
+			goto(`/book/${$bookName}/page/${nextPage}`);
 		}
 	}
 
-	let pageContainer: HTMLDivElement | undefined;
+	function onArrow({ key }: KeyboardEvent) {
+		if (key === 'ArrowRight') {
+			goRight();
+		}
+
+		if (key === 'ArrowLeft') {
+			goLeft();
+		}
+	}
+
+	function onClick() {}
+
+	let pageContainer: HTMLButtonElement | undefined;
 	function onFullscreen() {
 		pageContainer?.requestFullscreen();
 	}
@@ -71,8 +80,13 @@
 
 <style>
 	.page-container {
+		appearance: none;
+		border: none;
+		background-color: transparent;
 		display: grid;
 		column-gap: 0.5rem;
+		width: 100%;
+		padding: 0;
 		grid-template-columns: 1fr min-content 1fr;
 		grid-template-areas: 'space1 page1 space2';
 	}
@@ -95,7 +109,7 @@
 <a href="/book/{$bookName}">Pages</a>
 <button on:click={onFullscreen}>Fullscreen</button>
 <svelte:window on:keyup={onArrow} />
-<div bind:this={pageContainer} class="page-container" class:showingTwoPages>
+<button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
 	{#await leftPage}
 		<div class="loader" style="grid-area: page1;">Loading...</div>
 	{:then page}
@@ -108,4 +122,4 @@
 			<img style="grid-area: page2;" src={page} alt="" />
 		{/await}
 	{/if}
-</div>
+</button>
