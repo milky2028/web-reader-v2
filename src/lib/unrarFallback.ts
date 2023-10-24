@@ -4,9 +4,7 @@ type WriteResponseEvent = MessageEvent<{ file: File | null; error?: string; id: 
 
 export function unrarFallback(compressedFile: File) {
 	if (!worker) {
-		worker = new Worker(new URL('./workers/unrarFallbackWorker', import.meta.url), {
-			type: 'module'
-		});
+		worker = new Worker(new URL('./workers/unrarFallbackWorker', import.meta.url));
 	}
 
 	const id = crypto.randomUUID();
