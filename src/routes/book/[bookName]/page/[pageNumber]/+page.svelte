@@ -40,6 +40,8 @@
 
 		const previousPage =
 			$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
+
+		books.updateLastPage($bookName, previousPage);
 		goto(`/book/${$bookName}/page/${previousPage}`);
 	}
 
@@ -56,6 +58,7 @@
 				pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
 			]);
 
+			books.updateLastPage($bookName, nextPage);
 			goto(`/book/${$bookName}/page/${nextPage}`);
 		}
 	}

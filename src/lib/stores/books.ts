@@ -7,6 +7,7 @@ export type BookDetails = {
 	path: string;
 	pages: string[];
 	coverName: string;
+	lastPage: number;
 };
 
 function createBookStore() {
@@ -32,7 +33,19 @@ function createBookStore() {
 		});
 	}
 
-	return { subscribe, add };
+	function updateLastPage(bookName: string, lastPage: number) {
+		update(($books) => {
+			const details = $books.get(bookName);
+
+			if (details) {
+				$books.set(bookName, { ...details, lastPage });
+			}
+
+			return $books;
+		});
+	}
+
+	return { subscribe, add, updateLastPage };
 }
 
 export const books = createBookStore();

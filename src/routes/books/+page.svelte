@@ -7,9 +7,10 @@
 		Promise.all(
 			[...$books]
 				.sort(([bookNameA], [bookNameB]) => bookNameA.localeCompare(bookNameB))
-				.map(async ([bookName, book]) => ({
+				.map(async ([bookName, { coverName, lastPage }]) => ({
 					bookName,
-					coverImg: await pages.getPage($books, bookName, book.coverName)
+					coverImg: await pages.getPage($books, bookName, coverName),
+					lastPage
 				}))
 		)
 	);
@@ -38,9 +39,9 @@
 		<p>No books uploaded yet</p>
 	{:else}
 		<ul>
-			{#each cover as { bookName, coverImg } (coverImg)}
+			{#each cover as { bookName, coverImg, lastPage } (coverImg)}
 				<li>
-					<a href="/book/{bookName}/page/0">
+					<a href="/book/{bookName}/page/{lastPage}">
 						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
 					</a>
 				</li>

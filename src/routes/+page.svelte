@@ -46,7 +46,8 @@
 			books.add(bookName, {
 				path: sortedPages[0]?.path ?? '',
 				pages: pageNames,
-				coverName: cover?.name ?? ''
+				coverName: cover?.name ?? '',
+				lastPage: 0
 			});
 
 			if (cover instanceof CompressedFile) {
