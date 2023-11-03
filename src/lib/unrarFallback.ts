@@ -1,27 +1,32 @@
 let worker: Worker | undefined;
 
-type WriteResponseEvent = MessageEvent<{ file: File | null; error?: string; id: string }>;
+type WriteResponseEvent = MessageEvent<{
+	error?: string;
+	id: string;
+	returnVal: UnrarDirectory | UnrarFile;
+}>;
 
 export function unrarFallback(compressedFile: File) {
-	if (!worker) {
-		worker = new Worker(new URL('./workers/unrarFallbackWorker', import.meta.url));
-	}
-
 	const id = crypto.randomUUID();
-	return new Promise<File>((resolve, reject) => {
-		worker?.addEventListener(
+
+	return new Promise<void>((resolve, reject) => {
+		if (!worker) {
+			worker = new Worker(new URL('./workers/unrarFallbackWorker', import.meta.url));
+		}
+
+		worker.addEventListener(
 			'message',
-			({ data: { id: responseId, file, error } }: WriteResponseEvent) => {
+			({ data: { id: responseId, error } }: WriteResponseEvent) => {
 				if (responseId === id) {
-					if (file instanceof File) {
-						resolve(file);
-					} else {
+					if (error) {
 						reject(new Error(error));
+					} else {
+						resolve();
 					}
 				}
 			}
 		);
 
-		worker?.postMessage(worker.postMessage({ compressedFile, id }));
+		worker.postMessage({ compressedFile, id });
 	});
 }

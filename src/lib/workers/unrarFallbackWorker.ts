@@ -1,18 +1,13 @@
 /// <reference lib="WebWorker" />;
 
-declare global {
-	interface Window {
-		readRARContent: () => null;
-	}
-}
-
 importScripts('/libunrar.js');
 
-const unrar = self.readRARContent as () => null;
+type UnrarInput = MessageEvent<{ compressedFile: File; id: string }>;
 
-self.addEventListener('message', (event) => {
-	console.log(event);
-	console.log('invoking message worker');
+self.addEventListener('message', async ({ data: { compressedFile, id } }: UnrarInput) => {
+	const buffer = await compressedFile.arrayBuffer();
+	const bytes = new Uint8Array(buffer);
 
-	unrar();
+	const response = self.readRARContent([{ name: compressedFile.name, content: bytes }]);
+	self.postMessage({ returnVal: response.ls, id });
 });
