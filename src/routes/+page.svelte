@@ -64,7 +64,20 @@
 						writeFile(`/books/${bookName}/${file.name}`, file);
 					}
 				})
-				.catch(() => unrarFallback(file));
+				.catch(async () => {
+					const response = await unrarFallback(file);
+					const fileWrites = Object.values(response.ls).map(
+						// eslint-disable-next-line no-undef
+						async (entry: UnrarDirectory | UnrarFile) => {
+							if (entry.type === 'file') {
+								const fallbackFile = new File([entry.fileContent], entry.fullFileName);
+								await writeFile(`/books/${bookName}/${entry.fullFileName}`, fallbackFile);
+							}
+						}
+					);
+
+					await Promise.all(fileWrites);
+				});
 
 			return bookName;
 		});

@@ -9,5 +9,5 @@ self.addEventListener('message', async ({ data: { compressedFile, id } }: UnrarI
 	const bytes = new Uint8Array(buffer);
 
 	const response = self.readRARContent([{ name: compressedFile.name, content: bytes }]);
-	self.postMessage({ returnVal: response.ls, id });
+	self.postMessage({ returnVal: response, id });
 });
