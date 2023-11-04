@@ -48,7 +48,7 @@
 	}
 
 	async function goRight() {
-		const numberOfPagesToIncrement = $isLandscapeMode ? 2 : 1;
+		const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
 		const nextPage =
 			$pageNumber + numberOfPagesToIncrement >= $lastPage
 				? $pageNumber
