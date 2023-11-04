@@ -15,17 +15,19 @@
 		([$books, bookName]) => $books.get(bookName)?.pages.length ?? 1 - 1
 	);
 
-	let leftPage = Promise.resolve('');
-	$: leftPage = pages.getPage($books, $bookName, $pageNumber);
+	const leftPage = derived([books, bookName, pageNumber], ([$books, $bookName, $pageNumber]) =>
+		pages.getPage($books, $bookName, $pageNumber)
+	);
 
-	let rightPage = Promise.resolve('');
-	$: rightPage = pages.getPage($books, $bookName, $pageNumber + 1);
+	const rightPage = derived([books, bookName, pageNumber], ([$books, $bookName, $pageNumber]) =>
+		pages.getPage($books, $bookName, $pageNumber + 1)
+	);
 
 	let showingTwoPages = false;
 	$: (async () => {
 		const [oneIs, twoIs] = await Promise.all([
-			leftPage.then(isTwoPageSpread),
-			rightPage.then(isTwoPageSpread)
+			$leftPage.then(isTwoPageSpread),
+			$rightPage.then(isTwoPageSpread)
 		]);
 
 		const imgIsTwoPageSpread = oneIs || twoIs;
@@ -123,13 +125,13 @@
 <button on:click={onFullscreen}>Fullscreen</button>
 <svelte:window on:keyup={onArrow} />
 <button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
-	{#await leftPage}
+	{#await $leftPage}
 		<div class="loader" style="grid-area: page1;">Loading...</div>
 	{:then page}
 		<img style="grid-area: page1;" src={page} alt="" />
 	{/await}
 	{#if showingTwoPages}
-		{#await rightPage}
+		{#await $rightPage}
 			<div class="loader" style="grid-area: page2;">Loading...</div>
 		{:then page}
 			<img style="grid-area: page2;" src={page} alt="" />
