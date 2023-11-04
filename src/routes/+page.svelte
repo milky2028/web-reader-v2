@@ -9,6 +9,21 @@
 	import { pages } from '$lib/stores/pages';
 	import { unrarFallback } from '$lib/unrarFallback';
 
+	const acceptedFileTypes = [
+		// zip
+		'.cbz',
+		'.zip',
+		'application/zip',
+		'application/x-zip-compressed',
+		'multipart/x-zip',
+		// rar
+		'.cbr',
+		'application/vnd.rar',
+		'application/x-rar-compressed',
+		// both
+		'application/octet-stream'
+	];
+
 	function onDragover(event: DragEvent) {
 		event.preventDefault();
 
@@ -113,11 +128,6 @@
 
 <div class="container">
 	<div role="button" tabindex="0" on:dragover={onDragover} on:drop={onUpload} class="drop-zone">
-		<input
-			on:change={onUpload}
-			type="file"
-			accept=".cbz, .zip, .cbr, .rar, application/vnd.rar, application/zip"
-			multiple
-		/>
+		<input on:change={onUpload} type="file" accept={acceptedFileTypes.join()} multiple />
 	</div>
 </div>
