@@ -8,6 +8,17 @@ self.addEventListener('message', async ({ data: { compressedFile, id } }: UnrarI
 	const buffer = await compressedFile.arrayBuffer();
 	const bytes = new Uint8Array(buffer);
 
-	const response = self.readRARContent([{ name: compressedFile.name, content: bytes }]);
+	const response = self.readRARContent(
+		[{ name: compressedFile.name, content: bytes }],
+		undefined,
+		(currentFileName: string, currentFileSize: number, amountProcessed: number) => {
+			self.postMessage({
+				id,
+				returnVal: 'continuing',
+				processed: { currentFileName, currentFileSize, amountProcessed }
+			});
+		}
+	);
+
 	self.postMessage({ returnVal: response, id });
 });

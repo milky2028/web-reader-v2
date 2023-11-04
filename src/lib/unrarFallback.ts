@@ -1,12 +1,15 @@
 let worker: Worker | undefined;
 
+type Progress = { currentFileName: string; currentFileSize: number; amountProcessed: number };
+
 type WriteResponseEvent = MessageEvent<{
 	error?: string;
+	processed: Progress;
 	id: string;
-	returnVal: UnrarDirectory;
+	returnVal: UnrarDirectory | 'continuing';
 }>;
 
-export function unrarFallback(compressedFile: File) {
+export function unrarFallback(compressedFile: File, callback: (progress: Progress) => void) {
 	const id = crypto.randomUUID();
 
 	return new Promise<UnrarDirectory>((resolve, reject) => {
@@ -16,8 +19,12 @@ export function unrarFallback(compressedFile: File) {
 
 		worker.addEventListener(
 			'message',
-			({ data: { id: responseId, error, returnVal } }: WriteResponseEvent) => {
-				if (responseId === id) {
+			({ data: { id: responseId, error, returnVal, processed } }: WriteResponseEvent) => {
+				if (responseId === id && returnVal === 'continuing') {
+					callback(processed);
+				}
+
+				if (responseId === id && typeof returnVal !== 'string') {
 					if (error) {
 						reject(new Error(error));
 					} else {
