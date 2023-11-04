@@ -38,7 +38,7 @@
 	async function goLeft() {
 		const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
 		const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
-		const numberOfPagesToGoBack = isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
+		const numberOfPagesToGoBack = $isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
 
 		const previousPage =
 			$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
@@ -48,7 +48,7 @@
 	}
 
 	async function goRight() {
-		const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
+		const numberOfPagesToIncrement = $isLandscapeMode ? 2 : 1;
 		const nextPage =
 			$pageNumber + numberOfPagesToIncrement >= $lastPage
 				? $pageNumber
