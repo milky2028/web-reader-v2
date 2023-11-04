@@ -114,8 +114,8 @@
 	}
 
 	img {
-		max-height: calc(100vh - 40px);
-		min-height: calc(100vh - 40px);
+		max-height: calc(100vh - 42px);
+		min-height: calc(100vh - 42px);
 	}
 </style>
 
