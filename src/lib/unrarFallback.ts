@@ -21,7 +21,7 @@ export function unrarFallback(compressedFile: File, callback: (progress: Progres
 			'message',
 			({ data: { id: responseId, error, returnVal, processed } }: WriteResponseEvent) => {
 				if (responseId === id && returnVal === 'continuing') {
-					callback(processed);
+					callback?.(processed);
 				}
 
 				if (responseId === id && typeof returnVal !== 'string') {
