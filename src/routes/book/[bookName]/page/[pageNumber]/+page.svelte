@@ -5,7 +5,13 @@
 	import { isTwoPageSpread } from '$lib/isTwoPageSpread';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
+	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
+
+	let supportsFullscreen = false;
+	onMount(() => {
+		supportsFullscreen = 'requestFullscreen' in document.body;
+	});
 
 	const bookName = derived(page, ($page) => $page.params.bookName);
 	const pageNumber = derived(page, ($page) => +$page.params.pageNumber);
@@ -122,7 +128,9 @@
 </style>
 
 <a href="/book/{$bookName}">Pages</a>
-<button on:click={onFullscreen}>Fullscreen</button>
+{#if supportsFullscreen}
+	<button on:click={onFullscreen}>Fullscreen</button>
+{/if}
 <svelte:window on:keyup={onArrow} />
 <button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
 	{#await $leftPage}
