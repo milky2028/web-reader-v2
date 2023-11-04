@@ -9,7 +9,7 @@ type WriteResponseEvent = MessageEvent<{
 	returnVal: UnrarDirectory | 'continuing';
 }>;
 
-export function unrarFallback(compressedFile: File, callback: (progress: Progress) => void) {
+export function unrarFallback(compressedFile: File, callback?: (progress: Progress) => void) {
 	const id = crypto.randomUUID();
 
 	return new Promise<UnrarDirectory>((resolve, reject) => {
