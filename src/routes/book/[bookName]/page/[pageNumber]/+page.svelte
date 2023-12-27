@@ -121,6 +121,13 @@
 		align-self: center;
 	}
 
+	.page-marker {
+		grid-area: space2;
+		justify-self: start;
+		align-self: end;
+		padding-bottom: 1rem;
+	}
+
 	img {
 		max-height: calc(100vh - 42px);
 		min-height: calc(100vh - 42px);
@@ -145,4 +152,5 @@
 			<img style="grid-area: page2;" src={page} alt="" />
 		{/await}
 	{/if}
+	<div class="page-marker">{$pageNumber} / {$lastPage}</div>
 </button>
