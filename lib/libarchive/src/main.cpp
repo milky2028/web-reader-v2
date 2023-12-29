@@ -1,6 +1,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 
+extern "C" {
 void extract_file(const void* file, void on_success(void), void on_error(void)) {
   auto return_code = ARCHIVE_OK;
   auto working_archive = archive_read_new();
@@ -21,11 +22,4 @@ void extract_file(const void* file, void on_success(void), void on_error(void)) 
 
   archive_read_free(working_archive);
 }
-
-void on_success() {}
-void on_error() {}
-
-int main() {
-  void* data = NULL;
-  extract_file(data, on_success, on_error);
 }

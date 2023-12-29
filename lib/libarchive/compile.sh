@@ -1,9 +1,10 @@
 emcc \
--std=c++17 \
 -sMODULARIZE \
+-sEXPORTED_FUNCTIONS=_extract_file \
+-O0 \
+-std=c++17 \
 -I/Users/tgross/Documents/GitHub/libarchive/dist/include \
 -L/Users/tgross/Documents/GitHub/libarchive/dist/lib \
 -larchive \
--O0 \
 ./src/main.cpp \
 -o ./dist/libarchive.js
