@@ -1,6 +1,7 @@
 emcc \
 -sMODULARIZE \
 -sEXPORTED_FUNCTIONS=_extract_file \
+-sEXPORTED_RUNTIME_METHODS=cwrap \
 -O0 \
 -std=c++17 \
 -I/Users/tgross/Documents/GitHub/libarchive/dist/include \
