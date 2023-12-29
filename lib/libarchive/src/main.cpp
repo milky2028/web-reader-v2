@@ -4,7 +4,6 @@
 void extract_file(const void* file, void on_success(void), void on_error(void)) {
   auto return_code = ARCHIVE_OK;
   auto working_archive = archive_read_new();
-  archive_read_free(working_archive);
 
   archive_read_support_filter_all(working_archive);
   // archive_read_support_format_all(working_archive);
@@ -19,6 +18,8 @@ void extract_file(const void* file, void on_success(void), void on_error(void)) 
   if (return_code != ARCHIVE_OK) {
     on_error();
   }
+
+  archive_read_free(working_archive);
 }
 
 void on_success() {}
