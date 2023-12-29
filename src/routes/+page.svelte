@@ -4,10 +4,10 @@
 	import { writeFile } from '$lib/filesystem/writeFile';
 	import { isImage } from '$lib/isImage';
 	import { isMacOSFile } from '$lib/isMacOSFile';
+	import { range } from '$lib/range';
 	import { sortPagesCoverFirst } from '$lib/sortPages';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
-	import { unrarFallback } from '$lib/unrarFallback';
 
 	const acceptedFileTypes = [
 		// zip
@@ -66,34 +66,28 @@
 			});
 
 			if (cover instanceof CompressedFile) {
-				const [coverName] = pageNames;
-				if (coverName) {
+				if (cover.name) {
 					const coverPage = await cover.extract();
-					pages.add(coverName, await fileToImage(coverPage));
+					pages.add(cover.name, await fileToImage(coverPage));
 					writeFile(`/books/${bookName}/${cover?.name}`, coverPage);
 				}
 			}
 
-			archive
-				.extractFiles(({ file }) => {
-					if (file.name !== cover?.name) {
-						writeFile(`/books/${bookName}/${file.name}`, file);
-					}
-				})
-				.catch(async () => {
-					const response = await unrarFallback(file);
-					const fileWrites = Object.values(response.ls).map(
-						// eslint-disable-next-line no-undef
-						async (entry: UnrarDirectory | UnrarFile) => {
-							if (entry.type === 'file') {
-								const fallbackFile = new File([entry.fileContent], entry.fullFileName);
-								await writeFile(`/books/${bookName}/${entry.fullFileName}`, fallbackFile);
-							}
-						}
-					);
+			const cacheChunkSize = 50;
+			for (let i = 1; i < sortedPages.length; i += cacheChunkSize) {
+				const end =
+					i + cacheChunkSize < sortedPages.length ? i + cacheChunkSize : sortedPages.length;
 
-					await Promise.all(fileWrites);
+				const pagesToCache = range({ start: i, end }).map(async (pageNumber) => {
+					const page = sortedPages[pageNumber].file;
+					if (page instanceof CompressedFile) {
+						const file = await page.extract();
+						await writeFile(`/books/${bookName}/${file.name}`, file);
+					}
 				});
+
+				Promise.all(pagesToCache);
+			}
 
 			return bookName;
 		});
