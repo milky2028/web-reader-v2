@@ -1,5 +1,5 @@
 emcc \
--sMODULARIZE \
+-sEXPORT_ES6 \
 -O0 \
 -std=c++17 \
 -I/Users/tgross/Documents/GitHub/libarchive/dist/include \
