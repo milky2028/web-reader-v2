@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  extract-zip-rar:
+    specifier: ^0.0.9
+    version: link:../extract
   libarchive.js:
     specifier: ^1.3.0
     version: 1.3.0
