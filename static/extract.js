@@ -712,13 +712,13 @@ function createExportWrapper(name) {
 // end include: runtime_exceptions.js
 var wasmBinaryFile;
 if (Module['locateFile']) {
-  wasmBinaryFile = 'libarchive.wasm';
+  wasmBinaryFile = 'extract.wasm';
   if (!isDataURI(wasmBinaryFile)) {
     wasmBinaryFile = locateFile(wasmBinaryFile);
   }
 } else {
   // Use bundler-friendly `new URL(..., import.meta.url)` pattern; works in browsers too.
-  wasmBinaryFile = new URL('libarchive.wasm', import.meta.url).href;
+  wasmBinaryFile = new URL('extract.wasm', import.meta.url).href;
 }
 
 function getBinarySync(file) {

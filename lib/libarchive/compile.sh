@@ -7,4 +7,4 @@ emcc \
 -larchive \
 -lembind \
 ./src/main.cpp \
--o ./dist/libarchive.js
+-o ./dist/extract.js
