@@ -26,12 +26,14 @@ self.addEventListener(
 				const buffer = wasm.get_buffer(ptr, size);
 				const fileToWrite = new File([buffer], fileName);
 				await writeFile(`/books/${bookName}/${fileName}`, fileToWrite);
+
+				postMessage({ file: fileToWrite } as ExtractSingleEntryReturnPayload);
 			}
+
+			postMessage({ file: null } as ExtractSingleEntryReturnPayload);
+			allocated.free();
 		}, 'viii');
 
 		wasm.extract_single_entry(allocated.ptr, allocated.size, entryName, onFoundPtr);
-
-		postMessage({} as ExtractSingleEntryReturnPayload);
-		allocated.free();
 	}
 );

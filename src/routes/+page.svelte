@@ -5,6 +5,7 @@
 	import { extractSingleEntry } from '$lib/extractSingleEntry';
 	import { fileToImage } from '$lib/fileToImage';
 	import { writeFile } from '$lib/filesystem/writeFile';
+	import { getFileNameFromPath } from '$lib/getFileNameFromPath';
 	import { isImage } from '$lib/isImage';
 	import { isMacOSFile } from '$lib/isMacOSFile';
 	import { listEntryPaths } from '$lib/listEntryPaths';
@@ -48,12 +49,13 @@
 
 		const fileExtractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4);
-			const pages = await listEntryPaths(file);
-			const [coverName] = pages;
+			const pageNames = await listEntryPaths(file);
+			const [coverName] = pageNames;
 
-			await extractSingleEntry({ file, bookName, entryName: coverName });
+			const coverFile = await extractSingleEntry({ file, bookName, entryName: coverName });
+			pages.add(coverName, await fileToImage(coverFile));
 			books.add(bookName, {
-				pages,
+				pages: pageNames,
 				coverName,
 				lastPage: 0
 			});
@@ -71,14 +73,6 @@
 		}
 
 		// const extractFiles = files.map(async (file) => {
-
-		// 	if (cover instanceof CompressedFile) {
-		// 		if (cover.name) {
-		// 			const coverPage = await cover.extract();
-		// 			pages.add(cover.name, await fileToImage(coverPage));
-		// 			writeFile(`/books/${bookName}/${cover?.name}`, coverPage);
-		// 		}
-		// 	}
 
 		// 	const cacheChunkSize = 50;
 		// 	for (let i = 1; i < sortedPages.length; i += cacheChunkSize) {

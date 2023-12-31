@@ -4,17 +4,24 @@ export type ExtractSingleEntryParametersPayload = {
 	file: File;
 };
 
-export type ExtractSingleEntryReturnPayload = Record<string, never>;
+export type ExtractSingleEntryReturnPayload = { file: File | null };
 
 export function extractSingleEntry(params: ExtractSingleEntryParametersPayload) {
 	const url = new URL('./workers/extractSingleEntryWorker', import.meta.url);
 	const worker = new Worker(url, { type: 'module' });
 
-	return new Promise<void>((resolve) => {
-		worker.addEventListener('message', () => {
-			resolve();
-			// setTimeout(() => worker.terminate(), 0);
-		});
+	return new Promise<File>((resolve, reject) => {
+		worker.addEventListener(
+			'message',
+			({ data: { file } }: MessageEvent<ExtractSingleEntryReturnPayload>) => {
+				if (file) {
+					resolve(file);
+				} else {
+					reject(new Error(`Failed to extract ${params.entryName}.`));
+				}
+				// setTimeout(() => worker.terminate(), 0);
+			}
+		);
 
 		worker.postMessage(params);
 	});
