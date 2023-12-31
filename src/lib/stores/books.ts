@@ -4,7 +4,6 @@ import { writeManifest } from '$lib/filesystem/writeManifest';
 import { writable } from 'svelte/store';
 
 export type BookDetails = {
-	path: string;
 	pages: string[];
 	coverName: string;
 	lastPage: number;
