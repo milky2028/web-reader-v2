@@ -1,3 +1,4 @@
+import type init from 'extract-zip-rar';
 import moduleUrl from '../../node_modules/extract-zip-rar/dist/extract.js?url';
 import wasmURL from '../../node_modules/extract-zip-rar/dist/extract.wasm?url';
 
@@ -8,4 +9,6 @@ declare global {
 
 globalThis.wasmURL = wasmURL;
 const { default: initialize } = await import(moduleUrl);
-export const wasm = await initialize();
+const _initialize = initialize as typeof init;
+
+export const wasm = await _initialize();
