@@ -7,5 +7,10 @@ export function extractBook(file: File) {
 		type: 'module'
 	});
 
+	// worker terminating prematurely seems to prevent files from being written to disk
+	// worker.addEventListener('message', () => {
+	// 	worker.terminate();
+	// });
+
 	worker.postMessage({ file });
 }
