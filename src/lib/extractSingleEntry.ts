@@ -19,7 +19,7 @@ export function extractSingleEntry(params: ExtractSingleEntryParametersPayload) 
 				} else {
 					reject(new Error(`Failed to extract ${params.entryName}.`));
 				}
-				// setTimeout(() => worker.terminate(), 0);
+				setTimeout(() => worker.terminate(), 0);
 			}
 		);
 
