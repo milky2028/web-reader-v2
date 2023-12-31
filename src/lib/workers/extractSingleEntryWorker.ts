@@ -3,7 +3,6 @@ import type {
 	ExtractSingleEntryReturnPayload
 } from '$lib/extractSingleEntry';
 import { writeFile } from '$lib/filesystem/writeFile';
-import { getFileNameFromPath } from '$lib/getFileNameFromPath';
 
 function entryWasFound(path_ptr: string, ptr: number, size: number) {
 	return path_ptr != 'not-found' && ptr != 0 && size != 0;
@@ -21,10 +20,9 @@ self.addEventListener(
 
 		const onFoundPtr = wasm.addFunction(async (path_ptr: number, ptr: number, size: number) => {
 			// eslint-disable-next-line new-cap
-			const path = wasm.UTF8ToString(path_ptr);
-			const fileName = getFileNameFromPath(path);
+			const fileName = wasm.UTF8ToString(path_ptr);
 
-			if (entryWasFound(path, ptr, size) && fileName) {
+			if (entryWasFound(fileName, ptr, size) && fileName) {
 				const buffer = wasm.get_buffer(ptr, size);
 				const fileToWrite = new File([buffer], fileName);
 				await writeFile(`/books/${bookName}/${fileName}`, fileToWrite);
