@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { allocateFile } from '$lib/allocateFile';
+	import { extractBook } from '$lib/extractBook';
+	import { extractSingleEntry } from '$lib/extractSingleEntry';
 	import { fileToImage } from '$lib/fileToImage';
 	import { writeFile } from '$lib/filesystem/writeFile';
 	import { isImage } from '$lib/isImage';
 	import { isMacOSFile } from '$lib/isMacOSFile';
+	import { listEntryPaths } from '$lib/listEntryPaths';
 	import { range } from '$lib/range';
 	import { sortPagesCoverFirst } from '$lib/sortPages';
 	import { books } from '$lib/stores/books';
@@ -40,64 +44,60 @@
 
 	async function onUpload(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
 		const files = getFiles(event);
+		await navigator.storage.persist();
 
-		const [{ Archive, CompressedFile }] = await Promise.all([
-			import('$lib/archive'),
-			navigator.storage.persist()
-		]);
-
-		const extractFiles = files.map(async (file) => {
-			const archive = await Archive.open(file);
-			const archivedFiles = await archive.getFilesArray();
-
-			const sortedPages = archivedFiles
-				.filter((page) => !isMacOSFile(page) && isImage(page))
-				.sort(sortPagesCoverFirst);
-
-			const cover = sortedPages[0]?.file;
-			const pageNames = sortedPages.map((page) => page.file.name);
-
+		const fileExtractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4);
+			const pages = await listEntryPaths(file);
+			const [coverName] = pages;
+
+			await extractSingleEntry({ file, bookName, entryName: coverName });
 			books.add(bookName, {
-				path: sortedPages[0]?.path ?? '',
-				pages: pageNames,
-				coverName: cover?.name ?? '',
+				pages,
+				coverName,
 				lastPage: 0
 			});
-
-			if (cover instanceof CompressedFile) {
-				if (cover.name) {
-					const coverPage = await cover.extract();
-					pages.add(cover.name, await fileToImage(coverPage));
-					writeFile(`/books/${bookName}/${cover?.name}`, coverPage);
-				}
-			}
-
-			const cacheChunkSize = 50;
-			for (let i = 1; i < sortedPages.length; i += cacheChunkSize) {
-				const end =
-					i + cacheChunkSize < sortedPages.length ? i + cacheChunkSize : sortedPages.length;
-
-				const pagesToCache = range({ start: i, end }).map(async (pageNumber) => {
-					const page = sortedPages[pageNumber].file;
-					if (page instanceof CompressedFile) {
-						const file = await page.extract();
-						await writeFile(`/books/${bookName}/${file.name}`, file);
-					}
-				});
-
-				Promise.all(pagesToCache);
-			}
 
 			return bookName;
 		});
 
-		const [bookName] = await Promise.all(extractFiles);
+		await Promise.all(fileExtractions);
+
+		const [bookName] = await Promise.all(fileExtractions);
 		if (files.length === 1) {
 			goto(`/book/${bookName}/page/0`);
 		} else if (files.length > 0) {
 			goto('/books');
 		}
+
+		// const extractFiles = files.map(async (file) => {
+
+		// 	if (cover instanceof CompressedFile) {
+		// 		if (cover.name) {
+		// 			const coverPage = await cover.extract();
+		// 			pages.add(cover.name, await fileToImage(coverPage));
+		// 			writeFile(`/books/${bookName}/${cover?.name}`, coverPage);
+		// 		}
+		// 	}
+
+		// 	const cacheChunkSize = 50;
+		// 	for (let i = 1; i < sortedPages.length; i += cacheChunkSize) {
+		// 		const end =
+		// 			i + cacheChunkSize < sortedPages.length ? i + cacheChunkSize : sortedPages.length;
+
+		// 		const pagesToCache = range({ start: i, end }).map(async (pageNumber) => {
+		// 			const page = sortedPages[pageNumber].file;
+		// 			if (page instanceof CompressedFile) {
+		// 				const file = await page.extract();
+		// 				await writeFile(`/books/${bookName}/${file.name}`, file);
+		// 			}
+		// 		});
+
+		// 		Promise.all(pagesToCache);
+		// 	}
+
+		// 	return bookName;
+		// });
 	}
 </script>
 
