@@ -1,5 +1,6 @@
 import type { ExtractPayload } from '$lib/extractBook';
 import { writeFile } from '$lib/filesystem/writeFile';
+import { vectorToArray } from '$lib/vectorToArray';
 
 self.addEventListener('message', async ({ data: { file } }: MessageEvent<ExtractPayload>) => {
 	const { wasm } = await import('../wasm');
@@ -36,7 +37,9 @@ self.addEventListener('message', async ({ data: { file } }: MessageEvent<Extract
 		}
 	}, 'viii');
 
-	wasm.extract_book(file.name, allocatedFile.ptr, allocatedFile.size, onRead);
+	// wasm.extract_book(allocatedFile.ptr, allocatedFile.size, onRead);
+	const filesList = wasm.list_files(allocatedFile.ptr, allocatedFile.size);
+	console.log(vectorToArray<string>(filesList).sort());
 
 	allocatedFile.free();
 });
