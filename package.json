@@ -33,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"extract-zip-rar": "^0.1.0",
 		"libarchive.js": "^1.3.0"
 	}
 }
