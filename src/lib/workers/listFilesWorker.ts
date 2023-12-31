@@ -8,7 +8,7 @@ self.addEventListener(
 		const { allocateFile } = await import('$lib/allocateFile');
 
 		const allocated = await allocateFile(file);
-		const filesList = wasm.list_files(allocated.ptr, allocated.size);
+		const filesList = wasm.list_entry_paths(allocated.ptr, allocated.size);
 
 		postMessage({ pages: vectorToArray(filesList) } as ListPagesReturnPayload);
 		allocated.free();
