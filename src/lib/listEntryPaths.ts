@@ -6,7 +6,7 @@ export type ListEntryPathsReturnPayload = {
 	pages: string[];
 };
 
-export function listEntryPaths(file: File) {
+export function listEntryPaths(file: ListEntryPathsParametersPayload['file']) {
 	const url = new URL('./workers/listEntryPathsWorker', import.meta.url);
 	const worker = new Worker(url, { type: 'module' });
 
