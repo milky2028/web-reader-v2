@@ -1,16 +1,9 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { allocateFile } from '$lib/allocateFile';
-	import { extractBook } from '$lib/extractBook';
+	import { extractAllEntries } from '$lib/extractAllEntries';
 	import { extractSingleEntry } from '$lib/extractSingleEntry';
 	import { fileToImage } from '$lib/fileToImage';
-	import { writeFile } from '$lib/filesystem/writeFile';
-	import { getFileNameFromPath } from '$lib/getFileNameFromPath';
-	import { isImage } from '$lib/isImage';
-	import { isMacOSFile } from '$lib/isMacOSFile';
 	import { listEntryPaths } from '$lib/listEntryPaths';
-	import { range } from '$lib/range';
-	import { sortPagesCoverFirst } from '$lib/sortPages';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
 
@@ -60,6 +53,7 @@
 			});
 			pages.add(coverName, await fileToImage(coverFile));
 
+			extractAllEntries({ file, bookName });
 			return bookName;
 		});
 
@@ -71,27 +65,6 @@
 		} else if (files.length > 0) {
 			goto('/books');
 		}
-
-		// const extractFiles = files.map(async (file) => {
-
-		// 	const cacheChunkSize = 50;
-		// 	for (let i = 1; i < sortedPages.length; i += cacheChunkSize) {
-		// 		const end =
-		// 			i + cacheChunkSize < sortedPages.length ? i + cacheChunkSize : sortedPages.length;
-
-		// 		const pagesToCache = range({ start: i, end }).map(async (pageNumber) => {
-		// 			const page = sortedPages[pageNumber].file;
-		// 			if (page instanceof CompressedFile) {
-		// 				const file = await page.extract();
-		// 				await writeFile(`/books/${bookName}/${file.name}`, file);
-		// 			}
-		// 		});
-
-		// 		Promise.all(pagesToCache);
-		// 	}
-
-		// 	return bookName;
-		// });
 	}
 </script>
 
