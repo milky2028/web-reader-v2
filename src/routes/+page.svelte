@@ -53,12 +53,12 @@
 			const [coverName] = pageNames;
 
 			const coverFile = await extractSingleEntry({ file, bookName, entryName: coverName });
-			pages.add(coverName, await fileToImage(coverFile));
 			books.add(bookName, {
 				pages: pageNames,
 				coverName,
 				lastPage: 0
 			});
+			pages.add(coverName, await fileToImage(coverFile));
 
 			return bookName;
 		});
