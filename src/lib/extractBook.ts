@@ -9,7 +9,7 @@ export function extractBook(file: File) {
 
 	// worker terminating prematurely seems to prevent files from being written to disk
 	// worker.addEventListener('message', () => {
-	// 	worker.terminate();
+	// 	setTimeout(() => worker.terminate(), 0);
 	// });
 
 	worker.postMessage({ file });
