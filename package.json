@@ -3,9 +3,8 @@
 	"version": "0.0.1",
 	"private": true,
 	"scripts": {
-		"setup-wasm": "cp ./node_modules/extract-zip-rar/dist/extract.js ./static/extract.js && cp ./node_modules/extract-zip-rar/dist/extract.wasm ./static/extract.wasm",
 		"dev": "vite dev --host",
-		"build": "npm run setup-wasm && vite build && npm run lint && npm run check",
+		"build": "vite build && npm run lint && npm run check",
 		"preview": "vite preview --host",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
