@@ -35,10 +35,11 @@
 		const files = getFiles(event);
 		await navigator.storage.persist();
 
-		const extractions = files.map(async (file) => {
+		const extractions = files.map((file) => {
 			const bookName = file.name.slice(0, file.name.length - 4);
-			await extractBook({ file, bookName });
-			return bookName;
+			return new Promise((resolve) => {
+				extractBook({ file, bookName }, () => resolve(bookName));
+			});
 		});
 
 		await Promise.all(extractions);

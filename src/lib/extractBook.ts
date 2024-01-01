@@ -35,40 +35,39 @@ export type ExtractBookReturnPayload =
 	| ExtractBookPagePayload
 	| ExtractBookReportProgressLengthPayload;
 
-export function extractBook(params: ExtractBookParametersPayload) {
+export function extractBook(params: ExtractBookParametersPayload, onCoverExtraction: () => void) {
 	const url = new URL('./workers/extractBookWorker', import.meta.url);
 	const worker = new Worker(url, { type: 'module' });
 
-	return new Promise<void>((resolve) => {
-		worker.addEventListener(
-			'message',
-			async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
-				if (returnPayload.messageType === 'cover-file') {
-					pages.add(returnPayload.coverName, await fileToImage(returnPayload.coverFile));
-				}
-
-				if (returnPayload.messageType === 'book-setup') {
-					books.add(params.bookName, {
-						pages: returnPayload.pageNames,
-						coverName: returnPayload.pageNames[0],
-						lastPage: 0
-					});
-					progress.updateTotal(returnPayload.pageNames.length);
-				}
-
-				if (returnPayload.messageType === 'page') {
-					// pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
-					progress.increment();
-				}
-
-				if (returnPayload.messageType === 'completion') {
-					progress.clear();
-					// setTimeout(() => worker.terminate(), 0);
-					resolve();
-				}
+	worker.addEventListener(
+		'message',
+		async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
+			if (returnPayload.messageType === 'cover-file') {
+				pages.add(returnPayload.coverName, await fileToImage(returnPayload.coverFile));
+				onCoverExtraction();
 			}
-		);
 
-		worker.postMessage(params);
-	});
+			if (returnPayload.messageType === 'book-setup') {
+				books.add(params.bookName, {
+					pages: returnPayload.pageNames,
+					coverName: returnPayload.pageNames[0],
+					lastPage: 0
+				});
+				progress.updateTotal(returnPayload.pageNames.length);
+			}
+
+			if (returnPayload.messageType === 'page') {
+				// pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
+				progress.increment();
+			}
+
+			if (returnPayload.messageType === 'completion') {
+				progress.clear();
+				// setTimeout(() => worker.terminate(), 0);
+				// resolve();
+			}
+		}
+	);
+
+	worker.postMessage(params);
 }
