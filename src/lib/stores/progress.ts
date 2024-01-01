@@ -12,7 +12,7 @@ function createProgressStore() {
 	}
 
 	function updateTotal(total: number) {
-		update(() => ({ current: 0, outOf: total }));
+		update(({ outOf }) => ({ current: 0, outOf: total + outOf }));
 	}
 
 	function increment() {
