@@ -152,5 +152,5 @@
 			<img style="grid-area: page2;" src={page} alt="" />
 		{/await}
 	{/if}
-	<div class="page-marker">{$pageNumber} / {$lastPage}</div>
+	<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
 </button>
