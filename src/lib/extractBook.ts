@@ -57,7 +57,6 @@ export function extractBook(params: ExtractBookParametersPayload, onCoverExtract
 			}
 
 			if (returnPayload.messageType === 'page') {
-				// pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
 				progress.increment();
 			}
 
