@@ -6,7 +6,6 @@ import type {
 	ExtractBookReportProgressLengthPayload
 } from '$lib/extractBook';
 import { writeFile } from '$lib/filesystem/writeFile';
-import { books } from '$lib/stores/books';
 import { vectorToArray } from '$lib/vectorToArray';
 
 function entryWasFound(path_ptr: string, ptr: number, size: number) {
