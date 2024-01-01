@@ -63,7 +63,7 @@ export function extractBook(params: ExtractBookParametersPayload) {
 
 				if (returnPayload.messageType === 'completion') {
 					progress.clear();
-					setTimeout(() => worker.terminate(), 0);
+					// setTimeout(() => worker.terminate(), 0);
 					resolve();
 				}
 			}
