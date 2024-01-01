@@ -1,17 +1,10 @@
 import { fileToImage } from './fileToImage';
 import { books } from './stores/books';
 import { pages } from './stores/pages';
-import { progress } from './stores/progress';
 
 export type ExtractBookParametersPayload = {
 	file: File;
 	bookName: string;
-};
-
-export type ExtractBookCoverFilePayload = {
-	coverFile: File;
-	coverName: string;
-	messageType: 'cover-file';
 };
 
 export type ExtractBookCompletionPayload = {
@@ -24,49 +17,40 @@ export type ExtractBookPagePayload = {
 	messageType: 'page';
 };
 
-export type ExtractBookReportProgressLengthPayload = {
-	pageNames: string[];
-	messageType: 'book-setup';
-};
+export type ExtractBookReturnPayload = ExtractBookCompletionPayload | ExtractBookPagePayload;
 
-export type ExtractBookReturnPayload =
-	| ExtractBookCoverFilePayload
-	| ExtractBookCompletionPayload
-	| ExtractBookPagePayload
-	| ExtractBookReportProgressLengthPayload;
-
-export function extractBook(params: ExtractBookParametersPayload, onCoverExtraction: () => void) {
+export function extractBook(params: ExtractBookParametersPayload) {
 	const worker = new Worker(new URL('./workers/extractBookWorker', import.meta.url), {
 		type: 'module'
 	});
 
-	worker.addEventListener(
-		'message',
-		async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
-			if (returnPayload.messageType === 'cover-file') {
-				pages.add(returnPayload.coverName, await fileToImage(returnPayload.coverFile));
-				onCoverExtraction();
-			}
+	return new Promise<void>((resolve) => {
+		const pageMap = new Map<string, File>();
 
-			if (returnPayload.messageType === 'book-setup') {
-				books.add(params.bookName, {
-					pages: returnPayload.pageNames,
-					coverName: returnPayload.pageNames[0],
-					lastPage: 0
-				});
-				progress.updateTotal(returnPayload.pageNames.length);
-			}
+		worker.addEventListener(
+			'message',
+			async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
+				if (returnPayload.messageType === 'page') {
+					pageMap.set(returnPayload.pageName, returnPayload.pageFile);
+				}
 
-			if (returnPayload.messageType === 'page') {
-				progress.increment();
-			}
+				if (returnPayload.messageType === 'completion') {
+					const pageNames = [...pageMap.keys()].sort();
+					const [coverName] = pageNames;
 
-			if (returnPayload.messageType === 'completion') {
-				progress.clear();
-				// setTimeout(() => worker.terminate(), 0);
-			}
-		}
-	);
+					books.add(params.bookName, {
+						pages: pageNames,
+						coverName,
+						lastPage: 0
+					});
 
-	worker.postMessage(params);
+					pages.add(coverName, await fileToImage(pageMap.get(coverName) as File));
+					setTimeout(() => worker.terminate(), 0);
+					resolve();
+				}
+			}
+		);
+
+		worker.postMessage(params);
+	});
 }
