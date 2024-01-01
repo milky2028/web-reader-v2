@@ -35,27 +35,39 @@ export async function writeFile(path: string, file: File) {
 		return file.stream().pipeTo(writer);
 	}
 
-	const id = crypto.randomUUID();
-	return new Promise<void>((resolve, reject) => {
-		if (!worker) {
-			worker = new Worker(new URL('../workers/fileWriter', import.meta.url), {
-				type: 'module'
-			});
+	if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
+		const fileHandle = await getFileHandle(path, { create: true });
+		const syncHandle = await fileHandle.createSyncAccessHandle();
 
-			worker.addEventListener(
-				'message',
-				({ data: { returnVal, id: responseId } }: WriteResponseEvent) => {
-					if (responseId === id) {
-						if (returnVal === 'completed') {
-							resolve();
-						} else {
-							reject(new Error(returnVal));
+		const buffer = await file.arrayBuffer();
+		syncHandle.truncate(0);
+		syncHandle.write(buffer, { at: 0 });
+
+		syncHandle.flush();
+		syncHandle.close();
+	} else {
+		const id = crypto.randomUUID();
+		return new Promise<void>((resolve, reject) => {
+			if (!worker) {
+				worker = new Worker(new URL('../workers/fileWriter', import.meta.url), {
+					type: 'module'
+				});
+
+				worker.addEventListener(
+					'message',
+					({ data: { returnVal, id: responseId } }: WriteResponseEvent) => {
+						if (responseId === id) {
+							if (returnVal === 'completed') {
+								resolve();
+							} else {
+								reject(new Error(returnVal));
+							}
 						}
 					}
-				}
-			);
-		}
+				);
+			}
 
-		worker.postMessage({ path, file, id });
-	});
+			worker.postMessage({ path, file, id });
+		});
+	}
 }
