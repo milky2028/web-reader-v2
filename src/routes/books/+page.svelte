@@ -39,7 +39,7 @@
 		<p>No books uploaded yet</p>
 	{:else}
 		<ul>
-			{#each cover as { bookName, coverImg, lastPage } (coverImg)}
+			{#each cover as { bookName, coverImg, lastPage } (bookName)}
 				<li>
 					<a href="/book/{bookName}/page/{lastPage}">
 						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
