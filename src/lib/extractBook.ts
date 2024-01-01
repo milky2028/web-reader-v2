@@ -1,0 +1,74 @@
+import { fileToImage } from './fileToImage';
+import { books } from './stores/books';
+import { pages } from './stores/pages';
+import { progress } from './stores/progress';
+
+export type ExtractBookParametersPayload = {
+	file: File;
+	bookName: string;
+};
+
+export type ExtractBookCoverFilePayload = {
+	coverFile: File;
+	coverName: string;
+	messageType: 'cover-file';
+};
+
+export type ExtractBookCompletionPayload = {
+	messageType: 'completion';
+};
+
+export type ExtractBookPagePayload = {
+	pageFile: File;
+	pageName: string;
+	messageType: 'page';
+};
+
+export type ExtractBookReportProgressLengthPayload = {
+	pageNames: string[];
+	messageType: 'book-setup';
+};
+
+export type ExtractBookReturnPayload =
+	| ExtractBookCoverFilePayload
+	| ExtractBookCompletionPayload
+	| ExtractBookPagePayload
+	| ExtractBookReportProgressLengthPayload;
+
+export function extractBook(params: ExtractBookParametersPayload) {
+	const url = new URL('./workers/extractBookWorker', import.meta.url);
+	const worker = new Worker(url, { type: 'module' });
+
+	return new Promise<void>((resolve) => {
+		worker.addEventListener(
+			'message',
+			async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
+				if (returnPayload.messageType === 'cover-file') {
+					pages.add(returnPayload.coverName, await fileToImage(returnPayload.coverFile));
+				}
+
+				if (returnPayload.messageType === 'book-setup') {
+					books.add(params.bookName, {
+						pages: returnPayload.pageNames,
+						coverName: returnPayload.pageNames[0],
+						lastPage: 0
+					});
+					progress.updateTotal(returnPayload.pageNames.length);
+				}
+
+				if (returnPayload.messageType === 'page') {
+					pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
+					progress.increment();
+				}
+
+				if (returnPayload.messageType === 'completion') {
+					progress.reset();
+					setTimeout(() => worker.terminate(), 0);
+					resolve();
+				}
+			}
+		);
+
+		worker.postMessage(params);
+	});
+}

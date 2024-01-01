@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { extractAllEntries } from '$lib/extractAllEntries';
-	import { extractSingleEntry } from '$lib/extractSingleEntry';
-	import { fileToImage } from '$lib/fileToImage';
-	import { listEntryPaths } from '$lib/listEntryPaths';
-	import { books } from '$lib/stores/books';
-	import { pages } from '$lib/stores/pages';
+	import { extractBook } from '$lib/extractBook';
 
 	const acceptedFileTypes = [
 		// zip
@@ -40,26 +35,15 @@
 		const files = getFiles(event);
 		await navigator.storage.persist();
 
-		const fileExtractions = files.map(async (file) => {
+		const extractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4);
-			const pageNames = await listEntryPaths(file);
-			const [coverName] = pageNames;
-
-			const coverFile = await extractSingleEntry({ file, bookName, entryName: coverName });
-			books.add(bookName, {
-				pages: pageNames,
-				coverName,
-				lastPage: 0
-			});
-			pages.add(coverName, await fileToImage(coverFile));
-
-			extractAllEntries({ file, bookName });
+			await extractBook({ file, bookName });
 			return bookName;
 		});
 
-		await Promise.all(fileExtractions);
+		await Promise.all(extractions);
 
-		const [bookName] = await Promise.all(fileExtractions);
+		const [bookName] = await Promise.all(extractions);
 		if (files.length === 1) {
 			goto(`/book/${bookName}/page/0`);
 		} else if (files.length > 0) {
