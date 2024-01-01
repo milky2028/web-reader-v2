@@ -57,12 +57,12 @@ export function extractBook(params: ExtractBookParametersPayload) {
 				}
 
 				if (returnPayload.messageType === 'page') {
-					pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
+					// pages.add(returnPayload.pageName, await fileToImage(returnPayload.pageFile));
 					progress.increment();
 				}
 
 				if (returnPayload.messageType === 'completion') {
-					progress.reset();
+					progress.clear();
 					setTimeout(() => worker.terminate(), 0);
 					resolve();
 				}
