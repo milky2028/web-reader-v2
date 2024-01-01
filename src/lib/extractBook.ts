@@ -36,8 +36,9 @@ export type ExtractBookReturnPayload =
 	| ExtractBookReportProgressLengthPayload;
 
 export function extractBook(params: ExtractBookParametersPayload, onCoverExtraction: () => void) {
-	const url = new URL('./workers/extractBookWorker', import.meta.url);
-	const worker = new Worker(url, { type: 'module' });
+	const worker = new Worker(new URL('./workers/extractBookWorker', import.meta.url), {
+		type: 'module'
+	});
 
 	worker.addEventListener(
 		'message',
