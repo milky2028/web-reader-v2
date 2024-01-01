@@ -1,22 +1,19 @@
-import { dev } from '$app/environment';
 import type init from 'extract-zip-rar';
+import { dev } from '$app/environment';
 
-const path = dev ? '.debug' : '';
+import moduleUrl from '../../node_modules/extract-zip-rar/dist/extract.js?url';
+import wasmURL from '../../node_modules/extract-zip-rar/dist/extract.wasm?url';
 
-const { default: moduleURL } = await import(
-	`../../node_modules/extract-zip-rar/dist/extract${path}.js?url`
-);
-const { default: wasmURL } = await import(
-	`../../node_modules/extract-zip-rar/dist/extract${path}.wasm?url`
-);
+import devModuleUrl from '../../node_modules/extract-zip-rar/dist/extract.debug.js?url';
+import devWasmUrl from '../../node_modules/extract-zip-rar/dist/extract.debug.wasm?url';
 
 declare global {
 	// eslint-disable-next-line no-var
 	var wasmURL: string;
 }
 
-globalThis.wasmURL = wasmURL;
-const { default: initialize } = await import(moduleURL);
+globalThis.wasmURL = dev ? devWasmUrl : wasmURL;
+const { default: initialize } = await import(dev ? devModuleUrl : moduleUrl);
 const _initialize = initialize as typeof init;
 
 export const wasm = await _initialize();
