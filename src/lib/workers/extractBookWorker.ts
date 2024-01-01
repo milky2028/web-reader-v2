@@ -40,7 +40,7 @@ self.addEventListener(
 		}
 
 		const pageNames = vectorToArray<string>(wasm.list_entry_paths(allocated.ptr, allocated.size));
-		postMessage({
+		self.postMessage({
 			messageType: 'book-setup',
 			pageNames
 		} as ExtractBookReportProgressLengthPayload);
@@ -55,7 +55,7 @@ self.addEventListener(
 				const buffer = wasm.get_buffer(ptr, size);
 				const fileToWrite = new File([buffer], path);
 
-				postMessage({
+				self.postMessage({
 					messageType: 'page',
 					pageFile: fileToWrite,
 					pageName: path
@@ -64,7 +64,7 @@ self.addEventListener(
 				reads++;
 
 				if (reads === pageNames.length) {
-					postMessage({ messageType: 'completion' } as ExtractBookCompletionPayload);
+					self.postMessage({ messageType: 'completion' } as ExtractBookCompletionPayload);
 				}
 			}, 'viii');
 
@@ -72,7 +72,11 @@ self.addEventListener(
 		}
 
 		const coverFile = await extractSingleEntry(coverName);
-		postMessage({ coverFile, messageType: 'cover-file', coverName } as ExtractBookCoverFilePayload);
+		self.postMessage({
+			coverFile,
+			messageType: 'cover-file',
+			coverName
+		} as ExtractBookCoverFilePayload);
 
 		extractAllEntries();
 		allocated.free();
