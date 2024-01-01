@@ -1,6 +1,14 @@
+import { dev } from '$app/environment';
 import type init from 'extract-zip-rar';
-import moduleUrl from '../../node_modules/extract-zip-rar/dist/extract.js?url';
-import wasmURL from '../../node_modules/extract-zip-rar/dist/extract.wasm?url';
+
+const path = dev ? '.debug' : '';
+
+const { default: moduleURL } = await import(
+	`../../node_modules/extract-zip-rar/dist/extract${path}.js?url`
+);
+const { default: wasmURL } = await import(
+	`../../node_modules/extract-zip-rar/dist/extract${path}.wasm?url`
+);
 
 declare global {
 	// eslint-disable-next-line no-var
@@ -8,7 +16,7 @@ declare global {
 }
 
 globalThis.wasmURL = wasmURL;
-const { default: initialize } = await import(moduleUrl);
+const { default: initialize } = await import(moduleURL);
 const _initialize = initialize as typeof init;
 
 export const wasm = await _initialize();
