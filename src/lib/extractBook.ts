@@ -64,7 +64,6 @@ export function extractBook(params: ExtractBookParametersPayload, onCoverExtract
 			if (returnPayload.messageType === 'completion') {
 				progress.clear();
 				// setTimeout(() => worker.terminate(), 0);
-				// resolve();
 			}
 		}
 	);
