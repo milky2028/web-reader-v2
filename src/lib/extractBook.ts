@@ -17,7 +17,14 @@ export type ExtractBookPagePayload = {
 	messageType: 'page';
 };
 
-export type ExtractBookReturnPayload = ExtractBookCompletionPayload | ExtractBookPagePayload;
+export type ExtractBookWritePayload = {
+	messageType: 'write-complete';
+};
+
+export type ExtractBookReturnPayload =
+	| ExtractBookCompletionPayload
+	| ExtractBookPagePayload
+	| ExtractBookWritePayload;
 
 export function extractBook(params: ExtractBookParametersPayload) {
 	const worker = new Worker(new URL('./workers/extractBookWorker', import.meta.url), {
@@ -26,6 +33,7 @@ export function extractBook(params: ExtractBookParametersPayload) {
 
 	return new Promise<void>((resolve) => {
 		const pageMap = new Map<string, File>();
+		let writes = 0;
 
 		worker.addEventListener(
 			'message',
@@ -45,8 +53,14 @@ export function extractBook(params: ExtractBookParametersPayload) {
 					});
 
 					pages.add(coverName, await fileToImage(pageMap.get(coverName) as File));
-					setTimeout(() => worker.terminate(), 0);
 					resolve();
+				}
+
+				if (returnPayload.messageType === 'write-complete') {
+					writes++;
+					if (writes === pageMap.size) {
+						setTimeout(() => worker.terminate(), 0);
+					}
 				}
 			}
 		);

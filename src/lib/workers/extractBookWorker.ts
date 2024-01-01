@@ -1,7 +1,8 @@
 import type {
 	ExtractBookCompletionPayload,
 	ExtractBookPagePayload,
-	ExtractBookParametersPayload
+	ExtractBookParametersPayload,
+	ExtractBookWritePayload
 } from '$lib/extractBook';
 import { writeFile } from '$lib/filesystem/writeFile';
 
@@ -23,11 +24,15 @@ self.addEventListener(
 			const pageName = UTF8ToString(pageNamePtr);
 			if (isDone(pageName, pagePtr, pageSize)) {
 				self.postMessage({ messageType: 'completion' } as ExtractBookCompletionPayload);
+				allocated.free();
 			} else {
-				const buffer = get_buffer(pagePtr, pageSize);
+				const buffer: Uint8Array = get_buffer(pagePtr, pageSize);
 				const page = new File([buffer], pageName);
 
-				writeFile(`/books/${bookName}/${pageName}`, page);
+				writeFile(`/books/${bookName}/${pageName}`, page).then(() => {
+					self.postMessage({ messageType: 'write-complete' } as ExtractBookWritePayload);
+				});
+
 				self.postMessage({
 					messageType: 'page',
 					pageFile: page,
@@ -37,6 +42,5 @@ self.addEventListener(
 		}
 
 		extract_book(allocated.ptr, allocated.size, addFunction(onRead, 'viii'));
-		allocated.free();
 	}
 );
