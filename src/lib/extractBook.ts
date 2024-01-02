@@ -2,13 +2,23 @@ import { fileToImage } from './fileToImage';
 import { books } from './stores/books';
 import { pages } from './stores/pages';
 
-export type ExtractBookParametersPayload = {
+type ExtactBookFunctionParametersPayload = {
 	file: File;
 	bookName: string;
 };
 
-export type ExtractBookCompletionPayload = {
-	messageType: 'completion';
+export type ExtractBookInitializePayload = ExtactBookFunctionParametersPayload & {
+	messageType: 'initialize';
+};
+
+export type ExtractBookChunksPayload = {
+	messageType: 'extract-chunks';
+};
+
+export type ExtractBookParametersPayload = ExtractBookInitializePayload | ExtractBookChunksPayload;
+
+export type ExtractBookChunkCompletionPayload = {
+	messageType: 'chunks-exchausted';
 };
 
 export type ExtractBookPagePayload = {
@@ -17,54 +27,49 @@ export type ExtractBookPagePayload = {
 	messageType: 'page';
 };
 
-export type ExtractBookWritePayload = {
-	messageType: 'write-complete';
+export type ExtractBookInitializationReturnPayload = {
+	coverFile: File;
+	pageNames: string[];
+	messageType: 'initialization-complete';
 };
 
 export type ExtractBookReturnPayload =
-	| ExtractBookCompletionPayload
+	| ExtractBookChunkCompletionPayload
 	| ExtractBookPagePayload
-	| ExtractBookWritePayload;
+	| ExtractBookInitializationReturnPayload;
 
-export function extractBook(params: ExtractBookParametersPayload) {
+export function createExtractor({ file, bookName }: ExtactBookFunctionParametersPayload) {
 	const worker = new Worker(new URL('./workers/extractBookWorker', import.meta.url), {
 		type: 'module'
 	});
 
-	return new Promise<void>((resolve) => {
-		const pageMap = new Map<string, File>();
-		let writes = 0;
+	return {
+		initialize() {
+			return new Promise<void>((resolve) => {
+				worker.addEventListener(
+					'message',
+					async ({ data: params }: MessageEvent<ExtractBookReturnPayload>) => {
+						if (params.messageType === 'initialization-complete') {
+							const [coverName] = params.pageNames;
+							books.add(bookName, {
+								pages: params.pageNames,
+								coverName,
+								lastPage: 0
+							});
 
-		worker.addEventListener(
-			'message',
-			async ({ data: returnPayload }: MessageEvent<ExtractBookReturnPayload>) => {
-				if (returnPayload.messageType === 'page') {
-					pageMap.set(returnPayload.pageName, returnPayload.pageFile);
-				}
-
-				if (returnPayload.messageType === 'completion') {
-					const pageNames = [...pageMap.keys()].sort();
-					const [coverName] = pageNames;
-
-					books.add(params.bookName, {
-						pages: pageNames,
-						coverName,
-						lastPage: 0
-					});
-
-					pages.add(coverName, await fileToImage(pageMap.get(coverName) as File));
-					resolve();
-				}
-
-				if (returnPayload.messageType === 'write-complete') {
-					writes++;
-					if (writes === pageMap.size) {
-						setTimeout(() => worker.terminate(), 0);
+							pages.add(coverName, await fileToImage(params.coverFile));
+							resolve();
+						}
 					}
-				}
-			}
-		);
+				);
 
-		worker.postMessage(params);
-	});
+				const payload: ExtractBookInitializePayload = {
+					messageType: 'initialize',
+					file,
+					bookName
+				};
+				worker.postMessage(payload);
+			});
+		}
+	};
 }

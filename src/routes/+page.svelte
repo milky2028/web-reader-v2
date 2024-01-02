@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { extractBook } from '$lib/extractBook';
+	import { createExtractor } from '$lib/extractBook';
 
 	const acceptedFileTypes = [
 		// zip
@@ -37,7 +37,9 @@
 
 		const extractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4);
-			await extractBook({ file, bookName });
+			const extractor = createExtractor({ file, bookName });
+			await extractor.initialize();
+
 			return bookName;
 		});
 
