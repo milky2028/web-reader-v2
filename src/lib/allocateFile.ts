@@ -1,7 +1,5 @@
 export async function allocateFile(file: File) {
-	const { wasm } = await import('$lib/wasm');
-
-	const buffer = await file.arrayBuffer();
+	const [{ wasm }, buffer] = await Promise.all([import('$lib/wasm'), file.arrayBuffer()]);
 	const bytes = new Uint8Array(buffer);
 
 	const ptr = wasm._malloc(bytes.byteLength);
