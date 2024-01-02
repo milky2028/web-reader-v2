@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   extract-zip-rar:
-    specifier: ^0.4.6
-    version: 0.4.6
+    specifier: ^0.4.7
+    version: 0.4.7
 
 devDependencies:
   '@sveltejs/adapter-auto':
@@ -1302,8 +1302,8 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /extract-zip-rar@0.4.6:
-    resolution: {integrity: sha512-W4VE08+LrbqJ7CNejeyW62Et5ext/WpSSiOybXlGaYbU0BBP5CnSYwzQhb3xgP/Kx41FmAs82D11h7NoYGdI0w==}
+  /extract-zip-rar@0.4.7:
+    resolution: {integrity: sha512-Y1MDhwxUaaTx9aBaA2YvHllup2zS9+n3JdeGx9z3YIsjUD9RjxkQL4j0yiC561leK3p1B7ll+/pYE/7x83mbMg==}
     dev: false
 
   /fast-deep-equal@3.1.3:
