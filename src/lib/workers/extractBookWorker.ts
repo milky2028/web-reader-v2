@@ -70,7 +70,9 @@ self.addEventListener(
 			allocated = await allocateFile(params.file);
 			archivePtr = get_archive(allocated.ptr, allocated.size);
 
-			const pages = vectorToArray<string>(list_all_entries(allocated.ptr, allocated.size));
+			const pagesVector = list_all_entries(allocated.ptr, allocated.size);
+			const pages = vectorToArray<string>(pagesVector);
+			pagesVector.delete();
 
 			await extractChunks(params.bookName, 12);
 			const [coverName] = pages;
