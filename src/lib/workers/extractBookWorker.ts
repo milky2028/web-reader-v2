@@ -21,7 +21,7 @@ import { vectorToArray } from '$lib/vectorToArray';
 // - then get one issue's worth of chunks (currently 35, realistically Safari can handle alot more chunks than this, about 250 on desktop)
 // - when navigating through the book, check to see if we have the page on disk, if not iterate through the chunks until we have it
 
-const CHUNK_PAGE = 35;
+// const CHUNK_PAGE = 35;
 
 function chunksExhausted(path_ptr: string, ptr: number, size: number) {
 	return path_ptr === 'chunks-exhausted' && ptr === 0 && size === 0;
