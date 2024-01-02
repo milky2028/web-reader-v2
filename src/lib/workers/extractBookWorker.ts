@@ -5,6 +5,7 @@ import type {
 	ExtractBookWritePayload
 } from '$lib/extractBook';
 import { writeFile } from '$lib/filesystem/writeFile';
+import { allocateFile } from '$lib/allocateFile';
 
 function isDone(path_ptr: string, ptr: number, size: number) {
 	return path_ptr === 'last-read' && ptr === 0 && size === 0;
@@ -16,7 +17,6 @@ self.addEventListener(
 		const {
 			wasm: { extract_book, addFunction, get_buffer, UTF8ToString }
 		} = await import('$lib/wasm');
-		const { allocateFile } = await import('$lib/allocateFile');
 		const allocated = await allocateFile(file);
 
 		function onRead(pageNamePtr: number, pagePtr: number, pageSize: number) {
