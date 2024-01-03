@@ -28,7 +28,10 @@ self.addEventListener(
 			const page = entry_iterator.next().value;
 			if (page?.file) {
 				await writeFile(`/books/${bookName}/${page.fileName}`, page.file);
+				return page.fileName;
 			}
+
+			return '';
 		});
 		await Promise.all(initialPages);
 
