@@ -24,7 +24,7 @@ self.addEventListener(
 
 		// handle cases where cover is not the first file in the archive
 		const maybeCover = entry_iterator.next().value;
-		const initialPages = range({ start: 1, end: Math.min(12, pages.length) }).map(async () => {
+		const pageExtractions = range({ start: 1, end: Math.min(12, pages.length) }).map(async () => {
 			const page = entry_iterator.next().value;
 			if (page?.file) {
 				await writeFile(`/books/${bookName}/${page.fileName}`, page.file);
@@ -33,7 +33,12 @@ self.addEventListener(
 
 			return '';
 		});
-		await Promise.all(initialPages);
+
+		const [coverName] = pages;
+		const chunkedPageExtractions = await Promise.all(pageExtractions);
+		if (!chunkedPageExtractions.includes(coverName)) {
+			// cover not found
+		}
 
 		if (maybeCover?.file) {
 			await writeFile(`/books/${bookName}/${maybeCover.fileName}`, maybeCover.file);
