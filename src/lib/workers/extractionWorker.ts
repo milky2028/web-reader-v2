@@ -6,51 +6,58 @@ import type {
 import { writeFile } from '$lib/filesystem/writeFile';
 import { range } from '$lib/range';
 
+const CHUNK_SIZE = 8;
+
 self.addEventListener(
 	'message',
 	async ({ data: { file, bookName } }: MessageEvent<ExtractBookParamsPayload>) => {
+		const startWorker = performance.now();
 		const [{ readArchiveEntries }, wasmFile] = await Promise.all([
 			import('$lib/readArchiveEntries'),
-			allocateFile(file),
-			writeFile(`/books/${bookName}/archive`, file)
+			allocateFile(file)
 		]);
+		writeFile(`/books/${bookName}/archive`, file);
+		// eslint-disable-next-line no-console
+		console.log('time to start worker', performance.now() - startWorker);
 
 		const pages = [...readArchiveEntries({ file: wasmFile })]
 			.map((entry) => entry?.fileName)
 			.filter((fileName): fileName is string => fileName !== undefined)
 			.sort();
 
+		const [coverName] = pages;
 		const entry_iterator = readArchiveEntries({ file: wasmFile, extractData: true });
 
-		// handle cases where cover is not the first file in the archive
-		const maybeCover = entry_iterator.next().value;
-		const pageExtractions = range({ start: 1, end: Math.min(12, pages.length) }).map(async () => {
-			const page = entry_iterator.next().value;
-			if (page?.file) {
-				await writeFile(`/books/${bookName}/${page.fileName}`, page.file);
-				return page.fileName;
+		let coverFound = false;
+		const extractedChunks = new Map<string, File>();
+		for (let i = 0; i < pages.length; i += CHUNK_SIZE) {
+			const operations = range({ start: i, end: i + CHUNK_SIZE }).map(async () => {
+				const page = entry_iterator.next().value;
+				if (page?.file) {
+					await writeFile(`/books/${bookName}/${page.fileName}`, page.file);
+					extractedChunks.set(page.fileName, page.file);
+				}
+			});
+
+			const start = performance.now();
+			// eslint-disable-next-line no-await-in-loop
+			await Promise.all(operations);
+			// eslint-disable-next-line no-console
+			console.log(`time to extract ${CHUNK_SIZE} chunks`, performance.now() - start);
+
+			const coverFile = extractedChunks.get(coverName);
+			if (coverFile && !coverFound) {
+				const payload: ExtractBookReturnInitalizationPayload = {
+					messageType: 'initialization',
+					pageNames: pages,
+					coverFile
+				};
+
+				coverFound = true;
+				self.postMessage(payload);
 			}
-
-			return '';
-		});
-
-		const [coverName] = pages;
-		const chunkedPageExtractions = await Promise.all(pageExtractions);
-		if (!chunkedPageExtractions.includes(coverName)) {
-			// cover not found
-		}
-
-		if (maybeCover?.file) {
-			await writeFile(`/books/${bookName}/${maybeCover.fileName}`, maybeCover.file);
-			const payload: ExtractBookReturnInitalizationPayload = {
-				messageType: 'initialization',
-				pageNames: pages,
-				coverFile: maybeCover.file
-			};
-			self.postMessage(payload);
 		}
 
 		wasmFile.free();
-		postMessage({});
 	}
 );
