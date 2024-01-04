@@ -3,7 +3,7 @@
 	"short_name": "Comics",
 	"description": "ead comics stored as .cbr, .cbz, .zip, or .rar files.",
 	"start_url": "/books",
-	"display": "minimal-ui",
+	"display": "standalone",
 	"theme_color": "#FFEC00",
 	"icons": [
 		{
