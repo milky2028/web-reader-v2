@@ -7,16 +7,19 @@
 	"theme_color": "#fff15c",
 	"icons": [
 		{
-			"src": "/reader-1024x1024",
+			"src": "/reader-1024x1024.png",
 			"sizes": "1024x1024",
-			"type": "image/png",
-			"purpose": "maskable"
+			"type": "image/png"
 		},
 		{
-			"src": "/reader-512x512",
+			"src": "/reader-512x512.png",
 			"sizes": "512x512",
-			"type": "image/png",
-			"purpose": "maskable"
+			"type": "image/png"
+		},
+		{
+			"src": "/reader-144x144.png",
+			"sizes": "144x144",
+			"type": "image/png"
 		}
 	],
 	"file_handlers": [
