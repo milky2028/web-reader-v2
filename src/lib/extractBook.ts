@@ -9,13 +9,19 @@ type ExtractBookParams = {
 
 export type ExtractBookParamsPayload = ExtractBookParams;
 
+export type ExtractBookReturnCompletionPayload = {
+	messageType: 'completion';
+};
+
 export type ExtractBookReturnInitalizationPayload = {
 	messageType: 'initialization';
 	pageNames: string[];
 	coverFile: File;
 };
 
-export type ExtractBookReturnPayload = ExtractBookReturnInitalizationPayload;
+export type ExtractBookReturnPayload =
+	| ExtractBookReturnInitalizationPayload
+	| ExtractBookReturnCompletionPayload;
 
 export function extractBook({ bookName, file }: ExtractBookParams) {
 	const worker = new Worker(new URL('./workers/extractionWorker', import.meta.url), {
@@ -38,7 +44,9 @@ export function extractBook({ bookName, file }: ExtractBookParams) {
 					resolve();
 				}
 
-				// setTimeout(() => worker.terminate(), 0);
+				if (message.messageType === 'completion') {
+					setTimeout(() => worker.terminate(), 0);
+				}
 			}
 		);
 

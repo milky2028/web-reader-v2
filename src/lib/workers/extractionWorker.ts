@@ -1,6 +1,7 @@
 import { allocateFile } from '$lib/allocateFile';
 import type {
 	ExtractBookParamsPayload,
+	ExtractBookReturnCompletionPayload,
 	ExtractBookReturnInitalizationPayload
 } from '$lib/extractBook';
 import { writeFile } from '$lib/filesystem/writeFile';
@@ -59,6 +60,8 @@ self.addEventListener(
 			}
 		}
 
+		const payload: ExtractBookReturnCompletionPayload = { messageType: 'completion' };
+		self.postMessage(payload);
 		wasmFile.free();
 	}
 );
