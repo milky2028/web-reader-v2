@@ -1,8 +1,9 @@
 {
   "name": "Web Comic Reader",
   "short_name": "Comics",
-  "start_url": "/books",
   "description": "ead comics stored as .cbr, .cbz, .zip, or .rar files.",
+  "start_url": "/books",
+  "display": "standalone",
   "file_handlers": [{"action": "/", "accept": {
     "application/zip": [".zip", ".cbz"],
     "application/x-zip-compressed": [".zip", ".cbz"],
