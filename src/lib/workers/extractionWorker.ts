@@ -12,7 +12,8 @@ self.addEventListener(
 	'message',
 	async ({ data: { file, bookName } }: MessageEvent<ExtractBookParamsPayload>) => {
 		const startWorker = performance.now();
-		const [{ readArchiveEntries }, wasmFile] = await Promise.all([
+		const [wasm, { readArchiveEntries }, wasmFile] = await Promise.all([
+			import('$lib/wasm').then(({ wasm }) => wasm),
 			import('$lib/readArchiveEntries'),
 			allocateFile(file)
 		]);
@@ -20,13 +21,13 @@ self.addEventListener(
 		// eslint-disable-next-line no-console
 		console.log('time to start worker', performance.now() - startWorker);
 
-		const pages = [...readArchiveEntries({ file: wasmFile })]
+		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
 			.map((entry) => entry?.fileName)
 			.filter((fileName): fileName is string => fileName !== undefined)
 			.sort();
 
 		const [coverName] = pages;
-		const entry_iterator = readArchiveEntries({ file: wasmFile, extractData: true });
+		const entry_iterator = readArchiveEntries({ wasm, file: wasmFile, extractData: true });
 
 		let coverFound = false;
 		const extractedChunks = new Map<string, File>();

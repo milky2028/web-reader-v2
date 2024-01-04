@@ -1,30 +1,31 @@
-import { wasm } from '$lib/wasm';
 import type { allocateFile } from './allocateFile';
-const {
-	open_archive,
-	close_archive,
-	get_next_entry,
-	get_entry_name,
-	entry_is_file,
-	skip_extraction,
-	get_buffer,
-	read_entry_data,
-	get_entry_size,
-	free_buffer,
-	END_OF_FILE,
-	ENTRY_ERROR
-} = wasm;
 
 type ReadArchiveEntriesParams = {
 	file: Awaited<ReturnType<typeof allocateFile>>;
 	extractData?: boolean;
+	wasm: Awaited<typeof import('$lib/wasm').wasm>;
 };
 
 function isImage(path: string) {
 	return path.endsWith('.jpg') || path.endsWith('.png');
 }
 
-export function* readArchiveEntries({ file, extractData = false }: ReadArchiveEntriesParams) {
+export function* readArchiveEntries({ file, wasm, extractData = false }: ReadArchiveEntriesParams) {
+	const {
+		open_archive,
+		close_archive,
+		get_next_entry,
+		get_entry_name,
+		entry_is_file,
+		skip_extraction,
+		get_buffer,
+		read_entry_data,
+		get_entry_size,
+		free_buffer,
+		END_OF_FILE,
+		ENTRY_ERROR
+	} = wasm;
+
 	const archivePtr = open_archive(file.ptr, file.size);
 
 	for (;;) {

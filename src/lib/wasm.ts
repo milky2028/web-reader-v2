@@ -12,7 +12,10 @@ declare global {
 }
 
 globalThis.wasmURL = __IS_DEV__ ? devWasmUrl : prodWasmUrl;
-const { default: initialize } = await import(__IS_DEV__ ? devModuleUrl : prodModuleUrl);
-const _initialize = initialize as typeof init;
 
-export const wasm = await _initialize();
+export const wasm = import(__IS_DEV__ ? devModuleUrl : prodModuleUrl).then(
+	({ default: initialize }) => {
+		const _initialize = initialize as typeof init;
+		return _initialize();
+	}
+);
