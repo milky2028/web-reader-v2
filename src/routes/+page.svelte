@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { extractBook } from '$lib/extractBook';
+	import { onMount } from 'svelte';
 
 	const acceptedFileTypes = [
 		// zip
@@ -31,8 +32,7 @@
 		return Array.from(files ?? []).filter((file) => file.name.match(/.cbr|.cbz|.rar|.zip$/));
 	}
 
-	async function onUpload(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
-		const files = getFiles(event);
+	async function onUpload(files: File[]) {
 		await navigator.storage.persist();
 
 		const extractions = files.map(async (file) => {
@@ -49,6 +49,15 @@
 			goto('/books');
 		}
 	}
+
+	onMount(() => {
+		if ('launchQueue' in window) {
+			window.launchQueue.setConsumer(async ({ files }) => {
+				const fileData = await Promise.all(files.map((fileHandle) => fileHandle.getFile()));
+				onUpload(fileData);
+			});
+		}
+	});
 </script>
 
 <style>
@@ -71,7 +80,18 @@
 </style>
 
 <div class="container">
-	<div role="button" tabindex="0" on:dragover={onDragover} on:drop={onUpload} class="drop-zone">
-		<input on:change={onUpload} type="file" accept={acceptedFileTypes.join()} multiple />
+	<div
+		role="button"
+		tabindex="0"
+		on:dragover={onDragover}
+		on:drop={(event) => onUpload(getFiles(event))}
+		class="drop-zone"
+	>
+		<input
+			on:change={(event) => onUpload(getFiles(event))}
+			type="file"
+			accept={acceptedFileTypes.join()}
+			multiple
+		/>
 	</div>
 </div>

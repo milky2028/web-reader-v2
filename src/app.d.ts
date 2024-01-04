@@ -9,4 +9,17 @@ declare global {
 	}
 }
 
+type LaunchParams = {
+	files: FileSystemFileHandle[];
+	targetURL: string;
+};
+
+declare global {
+	interface Window {
+		launchQueue: {
+			setConsumer: (callback: (launchParams: LaunchParams) => void) => void;
+		};
+	}
+}
+
 export {};
