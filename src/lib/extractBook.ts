@@ -1,13 +1,16 @@
 import { books } from '$lib/stores/books';
 import { pages } from '$lib/stores/pages';
-import { fileToImage } from './fileToImage';
+import { fileToImage } from '$lib/fileToImage';
+import { writeFile } from '$lib/filesystem/writeFile';
 
-type ExtractBookParams = {
+type ExtractBookFunctionParams = {
 	bookName: string;
 	file: File;
 };
 
-export type ExtractBookParamsPayload = ExtractBookParams;
+export type ExtractBookWorkerParams = {
+	bookName: string;
+};
 
 export type ExtractBookReturnCompletionPayload = {
 	messageType: 'completion';
@@ -23,11 +26,12 @@ export type ExtractBookReturnPayload =
 	| ExtractBookReturnInitalizationPayload
 	| ExtractBookReturnCompletionPayload;
 
-export function extractBook({ bookName, file }: ExtractBookParams) {
+export async function extractBook({ bookName, file }: ExtractBookFunctionParams) {
 	const worker = new Worker(new URL('./workers/extractionWorker', import.meta.url), {
 		type: 'module'
 	});
 
+	await writeFile(`/books/${bookName}/archive`, file);
 	return new Promise<void>((resolve) => {
 		worker.addEventListener(
 			'message',
@@ -50,7 +54,7 @@ export function extractBook({ bookName, file }: ExtractBookParams) {
 			}
 		);
 
-		const payload: ExtractBookParamsPayload = { bookName, file };
+		const payload: ExtractBookWorkerParams = { bookName };
 		worker.postMessage(payload);
 	});
 }
