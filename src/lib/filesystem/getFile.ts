@@ -1,6 +1,6 @@
-import { getFileHandle } from './getFileHandle';
+import { getHandle } from './getHandle';
 
 export async function getFile(path: string) {
-	const handle = await getFileHandle(path);
+	const handle = await getHandle(path);
 	return handle.getFile();
 }

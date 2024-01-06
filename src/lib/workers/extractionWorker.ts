@@ -4,6 +4,7 @@ import type {
 	ExtractBookReturnInitalizationPayload,
 	ExtractBookWorkerParams
 } from '$lib/extractBook';
+import { deleteFile } from '$lib/filesystem/deleteFile';
 import { getFile } from '$lib/filesystem/getFile';
 import { writeFile } from '$lib/filesystem/writeFile';
 import { range } from '$lib/range';
@@ -59,8 +60,10 @@ self.addEventListener(
 			}
 		}
 
+		wasmFile.free();
+		await deleteFile(`/books/${bookName}/archive`);
+
 		const payload: ExtractBookReturnCompletionPayload = { messageType: 'completion' };
 		self.postMessage(payload);
-		wasmFile.free();
 	}
 );

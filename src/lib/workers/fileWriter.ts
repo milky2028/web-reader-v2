@@ -1,11 +1,11 @@
 /// <reference lib="WebWorker" />;
 
-import { getFileHandle } from '$lib/filesystem/getFileHandle';
+import { getHandle } from '$lib/filesystem/getHandle';
 
 type WriteEvent = MessageEvent<{ path: string; file: File; id: string }>;
 self.addEventListener('message', async ({ data: { path, file, id } }: WriteEvent) => {
 	try {
-		const fileHandle = await getFileHandle(path, { create: true });
+		const fileHandle = await getHandle(path, { create: true });
 		const syncHandle = await fileHandle.createSyncAccessHandle();
 
 		const buffer = await file.arrayBuffer();

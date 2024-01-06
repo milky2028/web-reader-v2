@@ -1,4 +1,4 @@
-import { getFileHandle } from './getFileHandle';
+import { getHandle } from './getHandle';
 
 // type Thread = {
 // 	worker: Worker;
@@ -29,14 +29,14 @@ type WriteResponseEvent = MessageEvent<{ returnVal: 'completed' | 'failed' | str
 let worker: Worker | undefined;
 
 export async function writeFile(path: string, file: File) {
-	const fileHandle = await getFileHandle(path, { create: true });
+	const fileHandle = await getHandle(path, { create: true });
 	if ('createWritable' in fileHandle) {
 		const writer = await fileHandle.createWritable();
 		return file.stream().pipeTo(writer);
 	}
 
 	if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-		const fileHandle = await getFileHandle(path, { create: true });
+		const fileHandle = await getHandle(path, { create: true });
 		const syncHandle = await fileHandle.createSyncAccessHandle();
 
 		const buffer = await file.arrayBuffer();
