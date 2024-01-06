@@ -1,7 +1,6 @@
 import { books } from '$lib/stores/books';
 import { pages } from '$lib/stores/pages';
 import { fileToImage } from '$lib/fileToImage';
-import { writeFile } from '$lib/filesystem/writeFile';
 
 type ExtractBookFunctionParams = {
 	bookName: string;
