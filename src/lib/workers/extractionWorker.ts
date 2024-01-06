@@ -4,8 +4,6 @@ import type {
 	ExtractBookReturnInitalizationPayload,
 	ExtractBookWorkerParams
 } from '$lib/extractBook';
-import { deleteFile } from '$lib/filesystem/deleteFile';
-import { getFile } from '$lib/filesystem/getFile';
 import { writeFile } from '$lib/filesystem/writeFile';
 import { range } from '$lib/range';
 
@@ -13,14 +11,13 @@ const CHUNK_SIZE = 8;
 
 self.addEventListener(
 	'message',
-	async ({ data: { bookName } }: MessageEvent<ExtractBookWorkerParams>) => {
+	async ({ data: { bookName, file } }: MessageEvent<ExtractBookWorkerParams>) => {
 		const startWorker = performance.now();
-		const [wasm, { readArchiveEntries }, file] = await Promise.all([
+		const [wasm, { readArchiveEntries }, wasmFile] = await Promise.all([
 			import('$lib/wasm').then(({ wasm }) => wasm),
 			import('$lib/readArchiveEntries'),
-			getFile(`/books/${bookName}/archive`)
+			allocateFile(file)
 		]);
-		const wasmFile = await allocateFile(file);
 		// eslint-disable-next-line no-console
 		console.log('time to start worker', performance.now() - startWorker);
 
@@ -61,8 +58,6 @@ self.addEventListener(
 		}
 
 		wasmFile.free();
-		await deleteFile(`/books/${bookName}/archive`);
-
 		const payload: ExtractBookReturnCompletionPayload = { messageType: 'completion' };
 		self.postMessage(payload);
 	}

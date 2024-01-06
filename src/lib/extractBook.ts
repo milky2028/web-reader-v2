@@ -10,6 +10,7 @@ type ExtractBookFunctionParams = {
 
 export type ExtractBookWorkerParams = {
 	bookName: string;
+	file: File;
 };
 
 export type ExtractBookReturnCompletionPayload = {
@@ -26,12 +27,11 @@ export type ExtractBookReturnPayload =
 	| ExtractBookReturnInitalizationPayload
 	| ExtractBookReturnCompletionPayload;
 
-export async function extractBook({ bookName, file }: ExtractBookFunctionParams) {
+export function extractBook({ bookName, file }: ExtractBookFunctionParams) {
 	const worker = new Worker(new URL('./workers/extractionWorker', import.meta.url), {
 		type: 'module'
 	});
 
-	await writeFile(`/books/${bookName}/archive`, file);
 	return new Promise<void>((resolve) => {
 		worker.addEventListener(
 			'message',
@@ -54,7 +54,7 @@ export async function extractBook({ bookName, file }: ExtractBookFunctionParams)
 			}
 		);
 
-		const payload: ExtractBookWorkerParams = { bookName };
+		const payload: ExtractBookWorkerParams = { bookName, file };
 		worker.postMessage(payload);
 	});
 }
