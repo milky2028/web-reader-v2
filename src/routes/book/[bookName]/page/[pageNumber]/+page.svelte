@@ -133,7 +133,7 @@
 		min-height: calc(100vh - 42px);
 	}
 
-	@media (width >= 834px) {
+	@media (width <= 834px) {
 		img {
 			max-width: 100vw;
 		}
