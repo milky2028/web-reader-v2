@@ -11,11 +11,19 @@
 <style>
 	progress {
 		appearance: none;
-		height: 0.25rem;
+		height: 5px;
 		position: absolute;
 		top: 0;
 		width: 100vw;
-		border: 0;
+		border: 1px solid white;
+	}
+
+	progress::-moz-progress-bar {
+		background-color: #007ba7;
+	}
+
+	progress::-webkit-progress-value {
+		background-color: #007ba7;
 	}
 </style>
 
