@@ -1,5 +1,7 @@
 import { allocateFile } from '$lib/allocateFile';
 import type {
+	ExtractBookChunksPayload,
+	ExtractBookCoverProcessedPayload,
 	ExtractBookReturnCompletionPayload,
 	ExtractBookReturnInitalizationPayload,
 	ExtractBookWorkerParams
@@ -7,24 +9,27 @@ import type {
 import { writeFile } from '$lib/filesystem/writeFile';
 import { range } from '$lib/range';
 
-const CHUNK_SIZE = 8;
+const CHUNK_SIZE = 1;
 
 self.addEventListener(
 	'message',
 	async ({ data: { bookName, file } }: MessageEvent<ExtractBookWorkerParams>) => {
-		const startWorker = performance.now();
 		const [wasm, { readArchiveEntries }, wasmFile] = await Promise.all([
 			import('$lib/wasm').then(({ wasm }) => wasm),
 			import('$lib/readArchiveEntries'),
 			allocateFile(file)
 		]);
-		// eslint-disable-next-line no-console
-		console.log('time to start worker', performance.now() - startWorker);
 
 		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
 			.map((entry) => entry?.fileName)
 			.filter((fileName): fileName is string => fileName !== undefined)
 			.sort();
+
+		const initializationPayload: ExtractBookReturnInitalizationPayload = {
+			messageType: 'initialization',
+			totalPages: pages.length
+		};
+		self.postMessage(initializationPayload);
 
 		const [coverName] = pages;
 		const entry_iterator = readArchiveEntries({ wasm, file: wasmFile, extractData: true });
@@ -39,26 +44,32 @@ self.addEventListener(
 				}
 			});
 
-			const start = performance.now();
 			// eslint-disable-next-line no-await-in-loop
 			await Promise.all(operations);
-			// eslint-disable-next-line no-console
-			console.log(`time to extract ${CHUNK_SIZE} chunks`, performance.now() - start);
 
 			const coverFile = extractedChunks.get(coverName);
 			if (coverFile && !coverFound) {
-				const payload: ExtractBookReturnInitalizationPayload = {
-					messageType: 'initialization',
+				const payload: ExtractBookCoverProcessedPayload = {
+					messageType: 'cover-extracted',
 					pageNames: pages,
 					coverFile
 				};
+
 				coverFound = true;
 				self.postMessage(payload);
 			}
+
+			const payload: ExtractBookChunksPayload = {
+				messageType: 'chunks-extracted',
+				amount: operations.length
+			};
+			self.postMessage(payload);
 		}
 
 		wasmFile.free();
-		const payload: ExtractBookReturnCompletionPayload = { messageType: 'completion' };
-		self.postMessage(payload);
+		const completionPayload: ExtractBookReturnCompletionPayload = {
+			messageType: 'completion'
+		};
+		self.postMessage(completionPayload);
 	}
 );

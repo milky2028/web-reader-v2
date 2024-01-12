@@ -15,8 +15,8 @@ function createProgressStore() {
 		update(({ outOf }) => ({ current: 0, outOf: total + outOf }));
 	}
 
-	function increment() {
-		update(({ current, outOf }) => ({ current: current + 1, outOf }));
+	function increment(amount = 1) {
+		update(({ current, outOf }) => ({ current: current + amount, outOf }));
 	}
 
 	return { subscribe, reset, updateTotal, increment, clear };

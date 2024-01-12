@@ -10,6 +10,7 @@
 
 <style>
 	progress {
+		appearance: none;
 		height: 0.25rem;
 		position: absolute;
 		top: 0;
