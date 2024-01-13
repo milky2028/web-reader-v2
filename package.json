@@ -2,9 +2,6 @@
 	"name": "latest",
 	"version": "0.0.1",
 	"private": true,
-	"engines": {
-		"node": ">=20.0.0"
-	},
 	"scripts": {
 		"dev": "vite dev --host",
 		"build": "vite build && npm run lint && npm run check",
