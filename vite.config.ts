@@ -5,7 +5,7 @@ import cert from 'vite-plugin-mkcert';
 export default defineConfig(({ mode }) => ({
 	plugins: [
 		sveltekit(),
-		cert(),
+		...(mode !== 'production' ? [cert()] : []),
 		{
 			name: 'configure-response-headers',
 			configureServer: (server) => {
