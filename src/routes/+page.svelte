@@ -36,7 +36,7 @@
 		await navigator.storage.persist();
 
 		const extractions = files.map(async (file) => {
-			const bookName = file.name.slice(0, file.name.length - 4);
+			const bookName = file.name.slice(0, file.name.length - 4).replace('#', '');
 			await extractBook({ bookName, file });
 
 			return bookName;
