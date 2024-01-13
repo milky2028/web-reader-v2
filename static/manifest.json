@@ -4,6 +4,7 @@
 	"description": "ead comics stored as .cbr, .cbz, .zip, or .rar files.",
 	"start_url": "/books",
 	"display": "standalone",
+	"background_color": "#007ba7",
 	"theme_color": "#007ba7",
 	"icons": [
 		{
