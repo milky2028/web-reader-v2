@@ -22,6 +22,11 @@
 			"src": "/reader-144x144.png",
 			"sizes": "144x144",
 			"type": "image/png"
+		},
+		{
+			"src": "/reader-180x180.png",
+			"sizes": "180x180",
+			"type": "image/png"
 		}
 	],
 	"file_handlers": [
