@@ -21,8 +21,7 @@ self.addEventListener(
 		]);
 
 		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
-			.map((entry) => entry?.fileName)
-			.filter((fileName): fileName is string => fileName !== undefined)
+			.map((entry) => entry.fileName)
 			.sort();
 
 		const initializationPayload: ExtractBookReturnInitalizationPayload = {

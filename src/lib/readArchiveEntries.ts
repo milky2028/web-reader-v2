@@ -17,7 +17,6 @@ export function* readArchiveEntries({ file, wasm, extractData = false }: ReadArc
 		get_next_entry,
 		get_entry_name,
 		entry_is_file,
-		skip_extraction,
 		get_buffer,
 		read_entry_data,
 		get_entry_size,
@@ -32,8 +31,7 @@ export function* readArchiveEntries({ file, wasm, extractData = false }: ReadArc
 		const entryPtr = get_next_entry(archivePtr);
 		if (entryPtr === END_OF_FILE || entryPtr === ENTRY_ERROR) {
 			close_archive(archivePtr);
-			yield null;
-			break;
+			return;
 		}
 
 		const path = get_entry_name(entryPtr).toLowerCase();
@@ -52,8 +50,6 @@ export function* readArchiveEntries({ file, wasm, extractData = false }: ReadArc
 			} else {
 				yield { fileName };
 			}
-		} else if (extractData) {
-			skip_extraction(archivePtr);
 		}
 	}
 }
