@@ -9,6 +9,9 @@ import type {
 import { writeFile } from '$lib/filesystem/writeFile';
 import { range } from '$lib/range';
 
+// chunk size of one is too slow since everything happens sequentially
+// the first read needs to be fast, small chunk size, the rest of them need to be about 250. Safari shits out at more than 250 chunks
+// const CHUNK_SIZE = 'createWritable' in FileSystemFileHandle.prototype ? 5_000 : 225;
 const CHUNK_SIZE = 1;
 
 self.addEventListener(
