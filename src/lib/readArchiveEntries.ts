@@ -55,7 +55,7 @@ export function* readArchiveEntries({ file, wasm, extractData = false }: ReadArc
 			}
 		}
 	} catch (error) {
-		if (error instanceof Error) {
+		if (error instanceof WebAssembly.Exception) {
 			throw getExceptionMessage(error)[1];
 		}
 
