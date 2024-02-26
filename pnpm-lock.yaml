@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   extract-zip-rar:
-    specifier: ^0.5.5
-    version: 0.5.5
+    specifier: ^0.5.6
+    version: 0.5.6
 
 devDependencies:
   '@sveltejs/adapter-auto':
@@ -1431,8 +1431,8 @@ packages:
       strip-final-newline: 3.0.0
     dev: true
 
-  /extract-zip-rar@0.5.5:
-    resolution: {integrity: sha512-73TlmIS6WUihSosgH7tJTJDld8iLXABVtB5H+L3PgO2KXRVzNCgD1/hhMLVA5fm8pVxbkWnMLACHsaGO50Tv/Q==}
+  /extract-zip-rar@0.5.6:
+    resolution: {integrity: sha512-14fAjOIr7y8dpcDaWkAapPQHUkBMvnJsvguLf+bdgCHSslEKnh/OqxeGocbSjj/kVGiO+SUErhNBqS/NXV6cAw==}
     dev: false
 
   /fast-deep-equal@3.1.3:
