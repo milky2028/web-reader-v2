@@ -36,6 +36,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"extract-zip-rar": "^0.5.6"
+		"extract-zip-rar": "^0.6.0"
 	}
 }
