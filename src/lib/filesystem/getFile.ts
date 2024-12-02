@@ -2,5 +2,6 @@ import { getHandle } from './getHandle';
 
 export async function getFile(path: string) {
 	const handle = await getHandle(path);
-	return handle.getFile();
+	const file = await handle.getFile()
+	return file.stream()
 }
