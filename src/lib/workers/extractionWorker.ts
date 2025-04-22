@@ -23,6 +23,7 @@ self.addEventListener(
 			allocateFile(file)
 		]);
 
+		// eslint-disable-next-line new-cap
 		const sorter = Intl.Collator('en-US', { numeric: true, sensitivity: 'base' });
 		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
 			.map((entry) => entry.fileName)
