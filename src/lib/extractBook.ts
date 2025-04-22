@@ -2,9 +2,6 @@ import { books } from '$lib/stores/books';
 import { pages } from '$lib/stores/pages';
 import { fileToImage } from '$lib/fileToImage';
 import { progress } from './stores/progress';
-import { readArchiveEntriesNative } from './readArchiveEntries';
-import { allocateFile } from './allocateFile';
-import { getHandle } from './filesystem/getHandle';
 
 type ExtractBookFunctionParams = {
 	bookName: string;
@@ -81,13 +78,4 @@ export function extractBook({ bookName, file }: ExtractBookFunctionParams) {
 		const payload: ExtractBookWorkerParams = { bookName, file };
 		worker.postMessage(payload);
 	});
-}
-
-export async function extractBookNative({ bookName, file }: ExtractBookFunctionParams) {
-	const [allocatedFile, wasm] = await Promise.all([
-		allocateFile(file),
-		import('$lib/wasm').then(({ wasm }) => wasm)
-	]);
-
-	readArchiveEntriesNative({ file: allocatedFile, wasm, bookName });
 }

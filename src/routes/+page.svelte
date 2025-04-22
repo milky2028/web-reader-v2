@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { extractBook, extractBookNative } from '$lib/extractBook';
+	import { extractBook } from '$lib/extractBook';
 	import { onMount } from 'svelte';
 
 	const acceptedFileTypes = [
@@ -37,18 +37,17 @@
 
 		const extractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4).replace('#', '');
-			// await extractBook({ bookName, file });
-			await extractBookNative({ bookName, file });
+			await extractBook({ bookName, file });
 
 			return bookName;
 		});
 
 		const [bookName] = await Promise.all(extractions);
-		// if (files.length === 1) {
-		// 	goto(`/book/${bookName}/page/0`);
-		// } else if (files.length > 0) {
-		// 	goto('/books');
-		// }
+		if (files.length === 1) {
+			goto(`/book/${bookName}/page/0`);
+		} else if (files.length > 0) {
+			goto('/books');
+		}
 	}
 
 	onMount(() => {
