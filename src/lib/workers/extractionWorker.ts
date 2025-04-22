@@ -23,9 +23,10 @@ self.addEventListener(
 			allocateFile(file)
 		]);
 
+		const sorter = Intl.Collator('en-US', { numeric: true, sensitivity: 'base' });
 		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
 			.map((entry) => entry.fileName)
-			.sort();
+			.sort(sorter.compare);
 
 		const initializationPayload: ExtractBookReturnInitalizationPayload = {
 			messageType: 'initialization',
