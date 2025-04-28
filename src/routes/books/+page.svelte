@@ -14,21 +14,39 @@
 				}))
 		)
 	);
+
+	function onDelete() {
+		console.log('deleted');
+	}
 </script>
 
 <style>
 	ul {
 		list-style: none;
-		margin: 0;
+		margin: 0.5rem;
 		padding: 0;
+		display: flex;
+		gap: 1rem;
 	}
 
 	li {
-		display: inline-block;
+		display: grid;
+		grid-template-areas: 'main';
+		width: min-content;
 	}
 
-	a {
-		padding: 0.25rem;
+	img {
+		height: 100%;
+		object-fit: cover;
+	}
+
+	button {
+		align-self: end;
+		justify-self: end;
+		cursor: pointer;
+		border-radius: 0.25rem;
+		margin: 0.25rem;
+		padding: 0.25rem 0.5rem;
 	}
 </style>
 
@@ -41,9 +59,10 @@
 		<ul>
 			{#each cover as { bookName, coverImg, lastPage } (bookName)}
 				<li>
-					<a href="/book/{bookName}/page/{lastPage}">
+					<a href="/book/{bookName}/page/{lastPage}" style="grid-area: main;">
 						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
 					</a>
+					<button on:click={onDelete} style="grid-area: main;">X</button>
 				</li>
 			{/each}
 		</ul>
