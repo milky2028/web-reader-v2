@@ -4,6 +4,7 @@ import { writeManifest } from '$lib/filesystem/writeManifest';
 import { writable } from 'svelte/store';
 
 export type BookDetails = {
+	path: string;
 	pages: string[];
 	coverName: string;
 	lastPage: number;
@@ -20,7 +21,7 @@ function createBookStore() {
 	})();
 
 	subscribe(($books) => {
-		if (browser && $books.size > 0) {
+		if (browser) {
 			writeManifest($books);
 		}
 	});
@@ -44,7 +45,18 @@ function createBookStore() {
 		});
 	}
 
-	return { subscribe, add, updateLastPage };
+	function remove(bookName: string) {
+		update(($books) => {
+			const book = $books.get(bookName);
+			if (book) {
+				$books.delete(bookName);
+			}
+
+			return $books;
+		});
+	}
+
+	return { subscribe, add, updateLastPage, remove };
 }
 
 export const books = createBookStore();

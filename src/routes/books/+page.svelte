@@ -14,10 +14,6 @@
 				}))
 		)
 	);
-
-	function onDelete() {
-		console.log('deleted');
-	}
 </script>
 
 <style>
@@ -27,6 +23,7 @@
 		padding: 0;
 		display: flex;
 		gap: 1rem;
+		flex-flow: row wrap;
 	}
 
 	li {
@@ -62,7 +59,7 @@
 					<a href="/book/{bookName}/page/{lastPage}" style="grid-area: main;">
 						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
 					</a>
-					<button on:click={onDelete} style="grid-area: main;">X</button>
+					<button on:click={() => books.remove(bookName)} style="grid-area: main;">X</button>
 				</li>
 			{/each}
 		</ul>

@@ -55,6 +55,7 @@ export function extractBook({ bookName, file }: ExtractBookFunctionParams) {
 				if (message.messageType === 'cover-extracted') {
 					const [coverName] = message.pageNames;
 					books.add(bookName, {
+						path: `/books/${bookName}`,
 						pages: message.pageNames,
 						coverName,
 						lastPage: 0
