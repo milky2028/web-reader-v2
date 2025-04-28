@@ -56,7 +56,13 @@ function createBookStore() {
 		});
 	}
 
-	return { subscribe, add, updateLastPage, remove };
+	function reset() {
+		update(() => {
+			return new Map<string, BookDetails>();
+		});
+	}
+
+	return { subscribe, add, updateLastPage, remove, reset };
 }
 
 export const books = createBookStore();

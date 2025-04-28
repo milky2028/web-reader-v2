@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { deleteAllBooks } from '$lib/filesystem/deleteAllBooks';
 	import { books } from '$lib/stores/books';
 	import { pages } from '$lib/stores/pages';
 	import { derived } from 'svelte/store';
@@ -14,6 +15,11 @@
 				}))
 		)
 	);
+
+	function deleteAll() {
+		books.reset();
+		deleteAllBooks();
+	}
 </script>
 
 <style>
@@ -53,6 +59,7 @@
 	{#if $books.size === 0}
 		<p>No books uploaded yet</p>
 	{:else}
+		<button on:click={deleteAll}>Delete all</button>
 		<ul>
 			{#each cover as { bookName, coverImg, lastPage } (bookName)}
 				<li>
