@@ -79,10 +79,6 @@
 		if (key === 'ArrowRight' || key === 'ArrowUp' || code === 'Space') {
 			goRight();
 		}
-
-		if (key === 'Enter') {
-			document.exitFullscreen();
-		}
 	}
 
 	let pageContainer: HTMLButtonElement | undefined;
