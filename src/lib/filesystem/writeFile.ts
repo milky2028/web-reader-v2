@@ -1,30 +1,5 @@
 import { getHandle } from './getHandle';
 
-// type Thread = {
-// 	worker: Worker;
-// 	tasks: number;
-// 	channel: BroadcastChannel;
-// 	timeout: number;
-// };
-
-// create a new worker in order to write a file until we hit the limit. Give each worker a number of tasks, then give the task to the worker with the lowest number of tasks
-
-// function offloadTask(workerUrl: URL) {
-// 	const threads: Thread[] = [];
-
-// 	return {
-// 		worker: new Worker(new URL('../workers/fileWriter', import.meta.url), {
-// 			type: 'module'
-// 		}),
-// 		tasks: 0,
-// 		channel: new BroadcastChannel(`${name}-${threadNumber}`)
-// 	};
-// }
-
-// const threads: Thread[] = [];
-
-// const THREAD_POOL_LIMIT = navigator.hardwareConcurrency || 4;
-
 type WriteResponseEvent = MessageEvent<{ returnVal: 'completed' | 'failed' | string; id: string }>;
 let worker: Worker | undefined;
 
