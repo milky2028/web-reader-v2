@@ -1,4 +1,4 @@
-import { allocateFile } from '$lib/allocateFile';
+import { allocateFileStreaming } from '$lib/allocateFileStreaming';
 import type {
 	ExtractBookChunksPayload,
 	ExtractBookCoverProcessedPayload,
@@ -20,7 +20,7 @@ self.addEventListener(
 		const [wasm, { readArchiveEntries }, wasmFile] = await Promise.all([
 			import('$lib/wasm').then(({ wasm }) => wasm),
 			import('$lib/readArchiveEntries'),
-			allocateFile(file)
+			allocateFileStreaming(file)
 		]);
 
 		// eslint-disable-next-line new-cap

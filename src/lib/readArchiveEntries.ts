@@ -1,7 +1,7 @@
-import type { allocateFile } from './allocateFile';
+import type { allocateFileStreaming } from './allocateFileStreaming';
 
 type ReadArchiveEntriesParams = {
-	file: Awaited<ReturnType<typeof allocateFile>>;
+	file: Awaited<ReturnType<typeof allocateFileStreaming>>;
 	extractData?: boolean;
 	wasm: Awaited<typeof import('$lib/wasm').wasm>;
 };
