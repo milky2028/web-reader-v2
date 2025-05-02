@@ -71,12 +71,12 @@
 		}
 	}
 
-	function onArrow({ key }: KeyboardEvent) {
-		if (key === 'ArrowLeft') {
+	function onArrow({ key, code }: KeyboardEvent) {
+		if (key === 'ArrowLeft' || key === 'ArrowDown' || key === 'Enter') {
 			goLeft();
 		}
 
-		if (key === 'ArrowRight') {
+		if (key === 'ArrowRight' || key === 'ArrowUp' || code === 'Space') {
 			goRight();
 		}
 
