@@ -11,15 +11,20 @@ export async function writeFile(path: string, file: File) {
 	}
 
 	if (typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope) {
-		const fileHandle = await getHandle(path, { create: true });
-		const syncHandle = await fileHandle.createSyncAccessHandle();
+		let position = 0;
+		const syncHandle = await (fileHandle as FileSystemFileHandle).createSyncAccessHandle();
+		const syncWriter = new WritableStream<Uint8Array>({
+			write(chunk) {
+				syncHandle.write(chunk, { at: position });
+				position += chunk.byteLength;
+			},
+			async close() {
+				// older browser versions have this API as async
+				await syncHandle.close();
+			}
+		});
 
-		const buffer = await file.arrayBuffer();
-		syncHandle.truncate(0);
-		syncHandle.write(buffer, { at: 0 });
-
-		syncHandle.flush();
-		syncHandle.close();
+		file.stream().pipeTo(syncWriter);
 	} else {
 		const id = crypto.randomUUID();
 		return new Promise<void>((resolve, reject) => {
