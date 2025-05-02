@@ -79,6 +79,10 @@
 		if (key === 'ArrowRight') {
 			goRight();
 		}
+
+		if (key === 'Enter') {
+			document.exitFullscreen();
+		}
 	}
 
 	let pageContainer: HTMLButtonElement | undefined;
