@@ -112,6 +112,10 @@
 		grid-template-areas: 'space1 page1 space2';
 	}
 
+	.page-container:fullscreen {
+		overflow: auto;
+	}
+
 	.showingTwoPages {
 		grid-template-columns: 1fr min-content min-content 1fr;
 		grid-template-areas: 'space1 page1 page2 space2';
@@ -131,6 +135,12 @@
 	img {
 		max-height: calc(100vh - 42px);
 		min-height: calc(100vh - 42px);
+	}
+
+	@media (width <= 834px) {
+		img {
+			max-width: 100vw;
+		}
 	}
 </style>
 
