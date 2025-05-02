@@ -94,12 +94,17 @@
 		}
 	}
 
+	let fullscreenWrapper: HTMLDivElement | undefined;
 	function onFullscreen() {
-		pageContainer?.requestFullscreen();
+		fullscreenWrapper?.requestFullscreen();
 	}
 </script>
 
 <style>
+	.fullscreen-wrapper:fullscreen {
+		overflow: auto;
+	}
+
 	.page-container {
 		appearance: none;
 		border: none;
@@ -143,18 +148,20 @@
 	<button on:click={onFullscreen}>Fullscreen</button>
 {/if}
 <svelte:window on:keyup={onArrow} />
-<button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
-	{#await $leftPage}
-		<div class="loader" style="grid-area: page1;">Loading...</div>
-	{:then page}
-		<img style="grid-area: page1;" src={page} alt="" />
-	{/await}
-	{#if showingTwoPages}
-		{#await $rightPage}
-			<div class="loader" style="grid-area: page2;">Loading...</div>
+<div bind:this={fullscreenWrapper} class="fullscreen-wrapper">
+	<button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
+		{#await $leftPage}
+			<div class="loader" style="grid-area: page1;">Loading...</div>
 		{:then page}
-			<img style="grid-area: page2;" src={page} alt="" />
+			<img style="grid-area: page1;" src={page} alt="" />
 		{/await}
-	{/if}
-	<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
-</button>
+		{#if showingTwoPages}
+			{#await $rightPage}
+				<div class="loader" style="grid-area: page2;">Loading...</div>
+			{:then page}
+				<img style="grid-area: page2;" src={page} alt="" />
+			{/await}
+		{/if}
+		<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
+	</button>
+</div>
