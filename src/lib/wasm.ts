@@ -1,4 +1,4 @@
-import type init from '../../node_modules/extract-zip-rar/dist/index';
+import type init from '../../node_modules/extract-zip-rar/dist/extract';
 
 import devModuleUrl from '../../node_modules/extract-zip-rar/dist/extract.debug.js?url';
 import devWasmUrl from '../../node_modules/extract-zip-rar/dist/extract.debug.wasm?url';
