@@ -11,7 +11,7 @@
 		"test": "vitest",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
 		"format": "prettier --plugin-search-dir . --write .",
-		"postinstall": "cp -a ./node_modules/extract-zip-rar/dist/. ./static"
+		"postinstall": "cp -a ./node_modules/extract-zip-rar/dist/. ./static/"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^3.1.1",
@@ -36,6 +36,6 @@
 	},
 	"type": "module",
 	"dependencies": {
-		"extract-zip-rar": "0.19.1"
+		"extract-zip-rar": "0.19.3"
 	}
 }
