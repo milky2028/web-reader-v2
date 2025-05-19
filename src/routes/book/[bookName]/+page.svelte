@@ -16,6 +16,10 @@
 	});
 </script>
 
+<svelte:head>
+	<title>{$page.params.bookName} - Comic Reader</title>
+</svelte:head>
+
 {#await $renderablePages}
 	<div>Loading...</div>
 {:then bookPages}

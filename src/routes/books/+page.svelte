@@ -53,6 +53,10 @@
 	}
 </style>
 
+<svelte:head>
+	<title>Comic Reader</title>
+</svelte:head>
+
 {#await $covers}
 	<div>Loading...</div>
 {:then cover}

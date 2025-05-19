@@ -143,6 +143,10 @@
 	}
 </style>
 
+<svelte:head>
+	<title>{$page.params.bookName} - Comic Reader</title>
+</svelte:head>
+
 <a href="/book/{$bookName}">Pages</a>
 {#if supportsFullscreen}
 	<button on:click={onFullscreen}>Fullscreen</button>

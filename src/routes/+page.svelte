@@ -79,6 +79,10 @@
 	}
 </style>
 
+<svelte:head>
+	<title>Comic Reader</title>
+</svelte:head>
+
 <div class="container">
 	<div
 		role="button"
