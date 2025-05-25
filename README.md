@@ -33,6 +33,10 @@ To create a production version of your app:
 npm run build
 ```
 
+## Compressing Files
+
+Native MacOS and Windows compression tools try to use deflate to compress files, but this corrupts files for some reason. To compress, use `zip` on the command line: `zip -0 -r mydir.zip mydir`.
+
 You can preview the production build with `npm run preview`.
 
 > To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
