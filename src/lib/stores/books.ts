@@ -21,7 +21,7 @@ function createBookStore() {
 	})();
 
 	subscribe(($books) => {
-		if (browser) {
+		if (browser && $books.size > 0) {
 			writeManifest($books);
 		}
 	});
