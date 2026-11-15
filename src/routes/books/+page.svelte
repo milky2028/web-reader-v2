@@ -69,8 +69,8 @@
 		margin: 0;
 		padding: 1rem;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(10rem, 1fr));
-		gap: 1.25rem 1rem;
+		grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+		gap: 1.5rem 1.25rem;
 	}
 
 	li {
@@ -79,9 +79,10 @@
 
 	a {
 		display: grid;
-		gap: 0.25rem;
+		gap: 0.375rem;
 		color: inherit;
 		text-decoration: none;
+		border-radius: 0.5rem;
 	}
 
 	.title {
@@ -101,8 +102,12 @@
 
 	.remove {
 		position: absolute;
-		top: 0.25rem;
-		right: 0.25rem;
+		top: 0.375rem;
+		right: 0.375rem;
+		padding: 0;
+		border-radius: 50%;
+		background: color-mix(in srgb, var(--bg) 85%, transparent);
+		font-size: 1.125rem;
 	}
 
 	.actions {

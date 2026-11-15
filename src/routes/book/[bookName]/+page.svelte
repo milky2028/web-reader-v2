@@ -46,20 +46,24 @@
 		margin: 0;
 		padding: 0 1rem 2rem;
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
 		gap: 1rem;
 	}
 
 	a {
 		display: grid;
-		gap: 0.25rem;
+		gap: 0.375rem;
 		justify-items: center;
+		padding: 0.25rem;
+		border-radius: 0.5rem;
 		color: var(--text-muted);
+		font-size: 1.125rem;
 		text-decoration: none;
 	}
 
 	a[aria-current='page'] {
 		color: var(--accent);
 		font-weight: 600;
+		outline: 3px solid var(--accent);
 	}
 </style>

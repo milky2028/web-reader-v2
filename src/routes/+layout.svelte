@@ -60,13 +60,19 @@
 	}
 
 	nav a {
-		padding: 0.5rem 0.75rem;
+		display: inline-flex;
+		align-items: center;
+		min-height: var(--touch);
+		padding: 0 1rem;
+		border-radius: 0.75rem;
+		font-size: 1.125rem;
 		text-decoration: none;
 	}
 
 	nav a[aria-current='page'] {
 		font-weight: 600;
 		color: var(--text);
+		background: var(--surface);
 	}
 
 	.failures {
@@ -80,7 +86,7 @@
 		justify-content: space-between;
 		gap: 1rem;
 		margin: 0;
-		padding: 0.5rem 1rem;
+		padding: 0.25rem 0.5rem 0.25rem 1rem;
 	}
 
 	progress {

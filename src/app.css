@@ -34,3 +34,39 @@ a {
 * {
 	box-sizing: border-box;
 }
+
+/* Touch: everything tappable is at least 48 CSS px (about 9 mm), sized for fingers on a tablet. */
+:root {
+	--touch: 3rem;
+}
+
+@media (pointer: coarse) {
+	html {
+		font-size: 112.5%;
+	}
+}
+
+button,
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: var(--touch);
+	min-width: var(--touch);
+	padding: 0 1rem;
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+	text-decoration: none;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible {
+	outline: 3px solid var(--link);
+	outline-offset: 2px;
+}
