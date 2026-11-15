@@ -1,9 +1,14 @@
 <script lang="ts">
+	import { afterNavigate } from '$app/navigation';
 	import { resolve } from '$app/paths';
+	import { count } from '#lib/analytics.ts';
 	import { progress as extraction } from '#lib/stores/progress.ts';
 	import '../app.css';
 
 	const { children } = $props();
+
+	// Count route patterns only (never the book name in the URL).
+	afterNavigate(({ to }) => count(to?.route.id ?? 'unknown'));
 
 	function preventDefault(event: DragEvent) {
 		event.preventDefault();

@@ -4,6 +4,9 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  # Usage counting (src/lib/analytics.ts). Empty = off. Set to your GoatCounter site, e.g.
+  # "https://<code>.goatcounter.com/count"
+  VITE_GOATCOUNTER_ENDPOINT = ""
 
 # Hashed build output never changes, so let browsers cache it forever.
 [[headers]]

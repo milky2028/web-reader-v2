@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { countUpload } from '#lib/analytics.ts';
 	import { extractBook } from '#lib/extractBook.ts';
 	import { onMount } from 'svelte';
 
@@ -38,6 +39,7 @@
 
 		const extractions = files.map(async (file) => {
 			const bookName = file.name.slice(0, file.name.length - 4).replace('#', '');
+			countUpload(file);
 			await extractBook({ bookName, file });
 
 			return bookName;
