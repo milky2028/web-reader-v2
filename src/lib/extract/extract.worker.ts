@@ -3,7 +3,7 @@
 import { isPagePath, sortPagePaths, storedPageName } from '#lib/archive-paths.ts';
 import { writeFileSync } from '#lib/filesystem/writeFile.ts';
 import { makeThumbnail, thumbnailPath } from '#lib/thumbnail.ts';
-import init, { type ArchiveSource, type ExtractModule } from 'extract-zip-rar';
+import init, { type ArchiveSource, type MainModule } from 'extract-zip-rar';
 import wasmUrl from 'extract-zip-rar/wasm?url';
 import type { ExtractMessage, ExtractRequest, FailureReason } from './protocol.ts';
 
@@ -48,21 +48,22 @@ function fileSource(file: File): ArchiveSource {
 }
 
 /** Iterates entries of a freshly opened archive, closing it when done. */
-function* entries(wasm: ExtractModule, source: ArchiveSource) {
-	const handle = wasm.open_archive(source);
-	if (handle === 0) {
-		throw new ExtractionFailure('open', wasm.last_open_error() || 'Could not open the archive');
+function* entries(wasm: MainModule, source: ArchiveSource) {
+	const opened = wasm.open_archive(source);
+	if (opened.handle === undefined) {
+		throw new ExtractionFailure('open', opened.error || 'Could not open the archive');
 	}
 
+	const { handle } = opened;
 	try {
 		for (;;) {
-			const entry = wasm.next_entry(handle);
-			if (entry === null) {
-				return;
+			const { entry, error } = wasm.next_entry(handle);
+			if (error !== undefined) {
+				throw new ExtractionFailure('read', error);
 			}
 
-			if ('error' in entry) {
-				throw new ExtractionFailure('read', entry.error);
+			if (!entry) {
+				return; // end of the archive
 			}
 
 			yield { entry, handle };
@@ -72,7 +73,7 @@ function* entries(wasm: ExtractModule, source: ArchiveSource) {
 	}
 }
 
-async function extract(wasm: ExtractModule, { file, directory }: ExtractRequest) {
+async function extract(wasm: MainModule, { file, directory }: ExtractRequest) {
 	const source = fileSource(file);
 
 	// Pass 1: headers only. Cheap for zip (the central directory is read once, entries are seeked
@@ -123,8 +124,8 @@ async function extract(wasm: ExtractModule, { file, directory }: ExtractRequest)
 				continue; // libarchive skips unread data; for zip that is just a seek
 			}
 
-			const data = wasm.read_entry(handle);
-			if (data instanceof Uint8Array) {
+			const { data } = wasm.read_entry(handle);
+			if (data) {
 				// eslint-disable-next-line no-await-in-loop -- one page in memory at a time, on purpose
 				await save(index, data);
 			} else {
@@ -164,7 +165,7 @@ self.addEventListener('unhandledrejection', (event) => {
 });
 
 self.addEventListener('message', async ({ data: request }: MessageEvent<ExtractRequest>) => {
-	let wasm: ExtractModule;
+	let wasm: MainModule;
 	try {
 		wasm = await wasmReady;
 	} catch (error) {
