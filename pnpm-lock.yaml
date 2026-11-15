@@ -167,8 +167,8 @@ importers:
   .:
     dependencies:
       extract-zip-rar:
-        specifier: github:milky2028/extract#edfb9d1fba4f5963ae854a3afcb860b315c98f14
-        version: https://codeload.github.com/milky2028/extract/tar.gz/edfb9d1fba4f5963ae854a3afcb860b315c98f14
+        specifier: github:milky2028/extract#18e70c770a0cf88b54bb19da1b534cfc3fda3661
+        version: https://codeload.github.com/milky2028/extract/tar.gz/18e70c770a0cf88b54bb19da1b534cfc3fda3661
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -774,8 +774,8 @@ packages:
     resolution: {integrity: sha512-KfYbmpRm0VbLjEvVa9yGwCi9GI34xvi7A/HXYWQO65CSD2u3MczUJSuwXKFIxlGsgBQizV9q5J9NHj4VG0n+pA==}
     engines: {node: '>=12.0.0'}
 
-  extract-zip-rar@https://codeload.github.com/milky2028/extract/tar.gz/edfb9d1fba4f5963ae854a3afcb860b315c98f14:
-    resolution: {gitHosted: true, integrity: sha512-jVC3LwJtVGBO3CyO9sxVV/AT+jbz4KERTDB6LB3TKFDgBQr8UP5Lq07EU6UGOqP82qQFZ1H6zZAqzW3kaBYAmg==, tarball: https://codeload.github.com/milky2028/extract/tar.gz/edfb9d1fba4f5963ae854a3afcb860b315c98f14}
+  extract-zip-rar@https://codeload.github.com/milky2028/extract/tar.gz/18e70c770a0cf88b54bb19da1b534cfc3fda3661:
+    resolution: {gitHosted: true, integrity: sha512-T0RSxw9BScIfuWDPtUS6ff/pj9tDlvesgQbykW4vy1QwOWGDvZqoCBp0pDyQno2O/M/TX+w0vLnNLFRcZShTDA==, tarball: https://codeload.github.com/milky2028/extract/tar.gz/18e70c770a0cf88b54bb19da1b534cfc3fda3661}
     version: 1.0.0
 
   fast-deep-equal@3.1.3:
@@ -1857,7 +1857,7 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  extract-zip-rar@https://codeload.github.com/milky2028/extract/tar.gz/edfb9d1fba4f5963ae854a3afcb860b315c98f14: {}
+  extract-zip-rar@https://codeload.github.com/milky2028/extract/tar.gz/18e70c770a0cf88b54bb19da1b534cfc3fda3661: {}
 
   fast-deep-equal@3.1.3: {}
 
