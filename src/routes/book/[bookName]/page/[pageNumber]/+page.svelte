@@ -1,20 +1,22 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/stores';
-	import { isLandscapeMode } from '$lib/isLandscape';
-	import { isTwoPageSpread } from '$lib/isTwoPageSpread';
-	import { books } from '$lib/stores/books';
-	import { pages } from '$lib/stores/pages';
+	import { page } from '$app/state';
+	import { isLandscapeMode } from '#lib/isLandscape.ts';
+	import { isTwoPageSpread } from '#lib/isTwoPageSpread.ts';
+	import { books } from '#lib/stores/books.ts';
+	import { pages } from '#lib/stores/pages.ts';
 	import { onMount } from 'svelte';
-	import { derived } from 'svelte/store';
+	import { derived, toStore } from 'svelte/store';
 
-	let supportsFullscreen = false;
+	let supportsFullscreen = $state(false);
 	onMount(() => {
 		supportsFullscreen = 'requestFullscreen' in document.body;
 	});
 
-	const bookName = derived(page, ($page) => $page.params.bookName);
-	const pageNumber = derived(page, ($page) => +$page.params.pageNumber);
+	const params = toStore(() => page.params);
+	const bookName = derived(params, ($params) => $params.bookName ?? '');
+	const pageNumber = derived(params, ($params) => Number($params.pageNumber));
 
 	const lastPage = derived(
 		[books, bookName],
@@ -29,17 +31,25 @@
 		pages.getPage($books, $bookName, $pageNumber + 1)
 	);
 
-	let showingTwoPages = false;
-	$: (async () => {
-		const [oneIs, twoIs] = await Promise.all([
-			$leftPage.then(isTwoPageSpread),
-			$rightPage.then(isTwoPageSpread)
-		]);
+	let showingTwoPages = $state(false);
+	$effect(() => {
+		// read every dependency synchronously so the effect tracks all of them
+		const left = $leftPage;
+		const right = $rightPage;
+		const landscape = $isLandscapeMode;
+		const current = $pageNumber;
+		const last = $lastPage;
 
-		const imgIsTwoPageSpread = oneIs || twoIs;
-		showingTwoPages =
-			$isLandscapeMode && $pageNumber !== 0 && $pageNumber !== $lastPage && !imgIsTwoPageSpread;
-	})();
+		void (async () => {
+			const [oneIs, twoIs] = await Promise.all([
+				left.then(isTwoPageSpread),
+				right.then(isTwoPageSpread)
+			]);
+
+			const imgIsTwoPageSpread = oneIs || twoIs;
+			showingTwoPages = landscape && current !== 0 && current !== last && !imgIsTwoPageSpread;
+		})();
+	});
 
 	async function goLeft() {
 		const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
@@ -50,7 +60,12 @@
 			$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
 
 		books.updateLastPage($bookName, previousPage);
-		goto(`/book/${$bookName}/page/${previousPage}`);
+		goto(
+			resolve('/book/[bookName]/page/[pageNumber]', {
+				bookName: $bookName,
+				pageNumber: String(previousPage)
+			})
+		);
 	}
 
 	async function goRight() {
@@ -67,7 +82,12 @@
 			]);
 
 			books.updateLastPage($bookName, nextPage);
-			goto(`/book/${$bookName}/page/${nextPage}`);
+			goto(
+				resolve('/book/[bookName]/page/[pageNumber]', {
+					bookName: $bookName,
+					pageNumber: String(nextPage)
+				})
+			);
 		}
 	}
 
@@ -81,7 +101,7 @@
 		}
 	}
 
-	let pageContainer: HTMLButtonElement | undefined;
+	let pageContainer: HTMLButtonElement | undefined = $state();
 	function onClick(event: MouseEvent) {
 		if (pageContainer) {
 			const { left, width } = pageContainer.getBoundingClientRect();
@@ -94,11 +114,38 @@
 		}
 	}
 
-	let fullscreenWrapper: HTMLDivElement | undefined;
+	let fullscreenWrapper: HTMLDivElement | undefined = $state();
 	function onFullscreen() {
 		fullscreenWrapper?.requestFullscreen();
 	}
 </script>
+
+<svelte:head>
+	<title>{$bookName} - Comic Reader</title>
+</svelte:head>
+
+<a href={resolve('/book/[bookName]', { bookName: $bookName })}>Pages</a>
+{#if supportsFullscreen}
+	<button onclick={onFullscreen}>Fullscreen</button>
+{/if}
+<svelte:window onkeyup={onArrow} />
+<div bind:this={fullscreenWrapper} class="fullscreen-wrapper">
+	<button bind:this={pageContainer} class="page-container" class:showingTwoPages onclick={onClick}>
+		{#await $leftPage}
+			<div class="loader" style="grid-area: page1;">Loading...</div>
+		{:then page}
+			<img style="grid-area: page1;" src={page} alt="" />
+		{/await}
+		{#if showingTwoPages}
+			{#await $rightPage}
+				<div class="loader" style="grid-area: page2;">Loading...</div>
+			{:then page}
+				<img style="grid-area: page2;" src={page} alt="" />
+			{/await}
+		{/if}
+		<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
+	</button>
+</div>
 
 <style>
 	.fullscreen-wrapper:fullscreen {
@@ -142,30 +189,3 @@
 		min-height: calc(100vh - 42px);
 	}
 </style>
-
-<svelte:head>
-	<title>{$page.params.bookName} - Comic Reader</title>
-</svelte:head>
-
-<a href="/book/{$bookName}">Pages</a>
-{#if supportsFullscreen}
-	<button on:click={onFullscreen}>Fullscreen</button>
-{/if}
-<svelte:window on:keyup={onArrow} />
-<div bind:this={fullscreenWrapper} class="fullscreen-wrapper">
-	<button bind:this={pageContainer} class="page-container" class:showingTwoPages on:click={onClick}>
-		{#await $leftPage}
-			<div class="loader" style="grid-area: page1;">Loading...</div>
-		{:then page}
-			<img style="grid-area: page1;" src={page} alt="" />
-		{/await}
-		{#if showingTwoPages}
-			{#await $rightPage}
-				<div class="loader" style="grid-area: page2;">Loading...</div>
-			{:then page}
-				<img style="grid-area: page2;" src={page} alt="" />
-			{/await}
-		{/if}
-		<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
-	</button>
-</div>

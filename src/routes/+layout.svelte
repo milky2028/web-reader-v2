@@ -1,12 +1,24 @@
 <script lang="ts">
-	import { progress } from '$lib/stores/progress';
+	import { resolve } from '$app/paths';
+	import { progress as extraction } from '#lib/stores/progress.ts';
 	import '../app.css';
+
+	const { children } = $props();
 
 	function preventDefault(event: DragEvent) {
 		event.preventDefault();
 		event.stopImmediatePropagation();
 	}
 </script>
+
+<div><a href={resolve('/')}>Upload</a> <a href={resolve('/books')}>Books</a></div>
+
+<main draggable="false" ondragover={preventDefault} ondrop={preventDefault}>
+	{@render children()}
+</main>
+{#if $extraction.outOf}
+	<progress value={$extraction.current} max={$extraction.outOf}></progress>
+{/if}
 
 <style>
 	progress {
@@ -26,12 +38,3 @@
 		background-color: #007ba7;
 	}
 </style>
-
-<div><a href="/">Upload</a> <a href="/books">Books</a></div>
-
-<main draggable="false" on:dragover={preventDefault} on:drop={preventDefault}>
-	<slot />
-</main>
-{#if $progress.outOf}
-	<progress value={$progress.current} max={$progress.outOf} />
-{/if}

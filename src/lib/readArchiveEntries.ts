@@ -3,7 +3,7 @@ import type { allocateFileStreaming } from './allocateFileStreaming';
 type ReadArchiveEntriesParams = {
 	file: Awaited<ReturnType<typeof allocateFileStreaming>>;
 	extractData?: boolean;
-	wasm: Awaited<typeof import('$lib/wasm').wasm>;
+	wasm: Awaited<typeof import('#lib/wasm.ts').wasm>;
 };
 
 function isImage(path: string) {

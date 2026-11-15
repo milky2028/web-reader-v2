@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
-	import { extractBook } from '$lib/extractBook';
+	import { extractBook } from '#lib/extractBook.ts';
 	import { onMount } from 'svelte';
 
 	const acceptedFileTypes = [
@@ -44,9 +45,11 @@
 
 		const [bookName] = await Promise.all(extractions);
 		if (files.length === 1) {
-			goto(`/book/${bookName}/page/0`);
+			goto(
+				resolve('/book/[bookName]/page/[pageNumber]', { bookName: bookName, pageNumber: String(0) })
+			);
 		} else if (files.length > 0) {
-			goto('/books');
+			goto(resolve('/books'));
 		}
 	}
 
@@ -59,6 +62,27 @@
 		}
 	});
 </script>
+
+<svelte:head>
+	<title>Comic Reader</title>
+</svelte:head>
+
+<div class="container">
+	<div
+		role="button"
+		tabindex="0"
+		ondragover={onDragover}
+		ondrop={(event) => onUpload(getFiles(event))}
+		class="drop-zone"
+	>
+		<input
+			onchange={(event) => onUpload(getFiles(event))}
+			type="file"
+			accept={acceptedFileTypes.join()}
+			multiple
+		/>
+	</div>
+</div>
 
 <style>
 	.container {
@@ -78,24 +102,3 @@
 		height: 50%;
 	}
 </style>
-
-<svelte:head>
-	<title>Comic Reader</title>
-</svelte:head>
-
-<div class="container">
-	<div
-		role="button"
-		tabindex="0"
-		on:dragover={onDragover}
-		on:drop={(event) => onUpload(getFiles(event))}
-		class="drop-zone"
-	>
-		<input
-			on:change={(event) => onUpload(getFiles(event))}
-			type="file"
-			accept={acceptedFileTypes.join()}
-			multiple
-		/>
-	</div>
-</div>

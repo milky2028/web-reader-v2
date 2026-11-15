@@ -1,5 +1,5 @@
-import { browser } from '$app/environment';
-import { createPage } from '$lib/createPage';
+import { browser } from '$app/env';
+import { createPage } from '#lib/createPage.ts';
 import { writable, get } from 'svelte/store';
 import type { BookDetails } from './books';
 
@@ -24,7 +24,6 @@ function createPageStore() {
 				pageName = $books.get(bookName)?.pages[pageName] ?? '';
 			}
 
-			// eslint-disable-next-line no-use-before-define
 			const $pages = get(pages);
 			let url = $pages.get(pageName);
 			if (!url) {
@@ -32,7 +31,7 @@ function createPageStore() {
 					url = await createPage(bookName, pageName);
 					add(pageName, url);
 					return url;
-				} catch (e) {
+				} catch {
 					return '';
 				}
 			}

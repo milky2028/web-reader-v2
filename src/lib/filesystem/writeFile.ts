@@ -29,7 +29,7 @@ export async function writeFile(path: string, file: File) {
 		const id = crypto.randomUUID();
 		return new Promise<void>((resolve, reject) => {
 			if (!worker) {
-				worker = new Worker(new URL('../workers/fileWriter', import.meta.url), {
+				worker = new Worker(new URL('../workers/fileWriter.ts', import.meta.url), {
 					type: 'module'
 				});
 

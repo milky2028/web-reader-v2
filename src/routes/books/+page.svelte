@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { deleteAllBooks } from '$lib/filesystem/deleteAllBooks';
-	import { books } from '$lib/stores/books';
-	import { pages } from '$lib/stores/pages';
+	import { resolve } from '$app/paths';
+	import { deleteAllBooks } from '#lib/filesystem/deleteAllBooks.ts';
+	import { books } from '#lib/stores/books.ts';
+	import { pages } from '#lib/stores/pages.ts';
 	import { derived } from 'svelte/store';
 
 	const covers = derived([books, pages], ([$books, _$pages]) =>
@@ -21,6 +22,36 @@
 		deleteAllBooks();
 	}
 </script>
+
+<svelte:head>
+	<title>Comic Reader</title>
+</svelte:head>
+
+{#await $covers}
+	<div>Loading...</div>
+{:then cover}
+	{#if $books.size === 0}
+		<p>No books uploaded yet</p>
+	{:else}
+		<button onclick={deleteAll}>Delete all</button>
+		<ul>
+			{#each cover as { bookName, coverImg, lastPage } (bookName)}
+				<li>
+					<a
+						href={resolve('/book/[bookName]/page/[pageNumber]', {
+							bookName: bookName,
+							pageNumber: String(lastPage)
+						})}
+						style="grid-area: main;"
+					>
+						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
+					</a>
+					<button onclick={() => books.remove(bookName)} style="grid-area: main;">X</button>
+				</li>
+			{/each}
+		</ul>
+	{/if}
+{/await}
 
 <style>
 	ul {
@@ -52,27 +83,3 @@
 		padding: 0.25rem 0.5rem;
 	}
 </style>
-
-<svelte:head>
-	<title>Comic Reader</title>
-</svelte:head>
-
-{#await $covers}
-	<div>Loading...</div>
-{:then cover}
-	{#if $books.size === 0}
-		<p>No books uploaded yet</p>
-	{:else}
-		<button on:click={deleteAll}>Delete all</button>
-		<ul>
-			{#each cover as { bookName, coverImg, lastPage } (bookName)}
-				<li>
-					<a href="/book/{bookName}/page/{lastPage}" style="grid-area: main;">
-						<img src={coverImg} loading="lazy" alt={bookName} width="200" />
-					</a>
-					<button on:click={() => books.remove(bookName)} style="grid-area: main;">X</button>
-				</li>
-			{/each}
-		</ul>
-	{/if}
-{/await}

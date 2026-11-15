@@ -1,5 +1,5 @@
 function createWritableMemoryStream(
-	wasm: Awaited<typeof import('$lib/wasm').wasm>,
+	wasm: Awaited<typeof import('#lib/wasm.ts').wasm>,
 	startingPtr: number
 ) {
 	let position = startingPtr;
@@ -13,7 +13,7 @@ function createWritableMemoryStream(
 }
 
 export async function allocateFileStreaming(file: File) {
-	const wasm = await import('$lib/wasm').then(({ wasm }) => wasm);
+	const wasm = await import('#lib/wasm.ts').then(({ wasm }) => wasm);
 	const ptr = wasm._malloc(file.size);
 	await file.stream().pipeTo(createWritableMemoryStream(wasm, ptr));
 

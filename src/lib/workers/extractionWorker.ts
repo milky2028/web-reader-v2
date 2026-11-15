@@ -1,13 +1,13 @@
-import { allocateFileStreaming } from '$lib/allocateFileStreaming';
+import { allocateFileStreaming } from '#lib/allocateFileStreaming.ts';
 import type {
 	ExtractBookChunksPayload,
 	ExtractBookCoverProcessedPayload,
 	ExtractBookReturnCompletionPayload,
 	ExtractBookReturnInitalizationPayload,
 	ExtractBookWorkerParams
-} from '$lib/extractBook';
-import { writeFile } from '$lib/filesystem/writeFile';
-import { range } from '$lib/range';
+} from '#lib/extractBook.ts';
+import { writeFile } from '#lib/filesystem/writeFile.ts';
+import { range } from '#lib/range.ts';
 
 // chunk size of one is too slow since everything happens sequentially
 // the first read needs to be fast, small chunk size, the rest of them need to be about 250. Safari shits out at more than 250 chunks
@@ -18,12 +18,11 @@ self.addEventListener(
 	'message',
 	async ({ data: { bookName, file } }: MessageEvent<ExtractBookWorkerParams>) => {
 		const [wasm, { readArchiveEntries }, wasmFile] = await Promise.all([
-			import('$lib/wasm').then(({ wasm }) => wasm),
-			import('$lib/readArchiveEntries'),
+			import('#lib/wasm.ts').then(({ wasm }) => wasm),
+			import('#lib/readArchiveEntries.ts'),
 			allocateFileStreaming(file)
 		]);
 
-		// eslint-disable-next-line new-cap
 		const sorter = Intl.Collator('en-US', { numeric: true, sensitivity: 'base' });
 		const pages = [...readArchiveEntries({ wasm, file: wasmFile })]
 			.map((entry) => entry.fileName)

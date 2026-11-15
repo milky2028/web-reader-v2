@@ -1,4 +1,4 @@
-import type { BookDetails } from '$lib/stores/books';
+import type { BookDetails } from '#lib/stores/books.ts';
 import { writeFile } from './writeFile';
 
 export const MANIFEST_NAME = 'book-manifest.json';

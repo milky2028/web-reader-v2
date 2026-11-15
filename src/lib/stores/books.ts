@@ -1,6 +1,6 @@
-import { browser } from '$app/environment';
-import { getManifest } from '$lib/filesystem/getManifest';
-import { writeManifest } from '$lib/filesystem/writeManifest';
+import { browser } from '$app/env';
+import { getManifest } from '#lib/filesystem/getManifest.ts';
+import { writeManifest } from '#lib/filesystem/writeManifest.ts';
 import { writable } from 'svelte/store';
 
 export type BookDetails = {

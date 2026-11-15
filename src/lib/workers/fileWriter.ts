@@ -1,6 +1,6 @@
 /// <reference lib="WebWorker" />;
 
-import { getHandle } from '$lib/filesystem/getHandle';
+import { getHandle } from '#lib/filesystem/getHandle.ts';
 
 type WriteEvent = MessageEvent<{ path: string; file: File; id: string }>;
 self.addEventListener('message', async ({ data: { path, file, id } }: WriteEvent) => {

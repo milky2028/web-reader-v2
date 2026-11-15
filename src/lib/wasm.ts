@@ -7,7 +7,6 @@ import prodModuleUrl from '../../node_modules/extract-zip-rar/dist/extract.js?ur
 import prodWasmUrl from '../../node_modules/extract-zip-rar/dist/extract.wasm?url';
 
 declare global {
-	// eslint-disable-next-line no-var
 	var wasmURL: string;
 }
 

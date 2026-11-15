@@ -1,4 +1,4 @@
-import type { BookDetails } from '$lib/stores/books';
+import type { BookDetails } from '#lib/stores/books.ts';
 import { getFile } from './getFile';
 import { MANIFEST_NAME } from './writeManifest';
 

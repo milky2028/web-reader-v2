@@ -1,6 +1,6 @@
-import { books } from '$lib/stores/books';
-import { pages } from '$lib/stores/pages';
-import { fileToImage } from '$lib/fileToImage';
+import { books } from '#lib/stores/books.ts';
+import { pages } from '#lib/stores/pages.ts';
+import { fileToImage } from '#lib/fileToImage.ts';
 import { progress } from './stores/progress';
 
 type ExtractBookFunctionParams = {
@@ -40,7 +40,7 @@ export type ExtractBookReturnPayload =
 	| ExtractBookReturnCompletionPayload;
 
 export function extractBook({ bookName, file }: ExtractBookFunctionParams) {
-	const worker = new Worker(new URL('./workers/extractionWorker', import.meta.url), {
+	const worker = new Worker(new URL('./workers/extractionWorker.ts', import.meta.url), {
 		type: 'module'
 	});
 
