@@ -16,7 +16,7 @@ type LaunchParams = {
 
 declare global {
 	interface Window {
-		launchQueue: {
+		launchQueue?: {
 			setConsumer: (callback: (launchParams: LaunchParams) => void) => void;
 		};
 	}

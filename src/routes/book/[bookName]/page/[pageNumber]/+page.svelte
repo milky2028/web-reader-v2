@@ -1,192 +1,250 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { isLandscapeMode } from '#lib/isLandscape.ts';
-	import { isTwoPageSpread } from '#lib/isTwoPageSpread.ts';
+	import { getPageUrl, isSpread } from '#lib/pages.ts';
 	import { books } from '#lib/stores/books.ts';
-	import { pages } from '#lib/stores/pages.ts';
 	import { onMount } from 'svelte';
-	import { derived, toStore } from 'svelte/store';
 
+	const bookName = $derived(page.params.bookName ?? '');
+	const pageNumber = $derived(Math.max(0, Math.trunc(Number(page.params.pageNumber)) || 0));
+	const book = $derived($books.get(bookName));
+	const pageCount = $derived(book?.pages.length ?? 0);
+	const lastIndex = $derived(Math.max(0, pageCount - 1));
+	const currentKey = $derived(`${bookName}/${pageNumber}`);
+
+	type View = { key: string; left: string | undefined; right: string | undefined; two: boolean };
+	let view: View | undefined = $state();
+	const loading = $derived(view?.key !== currentKey);
+
+	let loaded = $state(false);
 	let supportsFullscreen = $state(false);
 	onMount(() => {
-		supportsFullscreen = 'requestFullscreen' in document.body;
+		supportsFullscreen = document.fullscreenEnabled;
+		void books.loaded.then(() => (loaded = true));
 	});
 
-	const params = toStore(() => page.params);
-	const bookName = derived(params, ($params) => $params.bookName ?? '');
-	const pageNumber = derived(params, ($params) => Number($params.pageNumber));
-
-	const lastPage = derived(
-		[books, bookName],
-		([$books, bookName]) => $books.get(bookName)?.pages.length ?? 1 - 1
-	);
-
-	const leftPage = derived([books, bookName, pageNumber], ([$books, $bookName, $pageNumber]) =>
-		pages.getPage($books, $bookName, $pageNumber)
-	);
-
-	const rightPage = derived([books, bookName, pageNumber], ([$books, $bookName, $pageNumber]) =>
-		pages.getPage($books, $bookName, $pageNumber + 1)
-	);
-
-	let showingTwoPages = $state(false);
+	// Work out what to show. Every input is read before the first await so the effect tracks all
+	// of them, and a stale result (from a page the reader already left) is never applied.
 	$effect(() => {
-		// read every dependency synchronously so the effect tracks all of them
-		const left = $leftPage;
-		const right = $rightPage;
-		const landscape = $isLandscapeMode;
-		const current = $pageNumber;
-		const last = $lastPage;
+		const currentBook = book;
+		const name = bookName;
+		const index = pageNumber;
+		const key = currentKey;
+		const canPair = $isLandscapeMode && index !== 0 && index < lastIndex;
+		if (!currentBook) return;
 
+		let cancelled = false;
 		void (async () => {
-			const [oneIs, twoIs] = await Promise.all([
-				left.then(isTwoPageSpread),
-				right.then(isTwoPageSpread)
+			const [left, leftIsSpread, rightIsSpread] = await Promise.all([
+				getPageUrl(name, currentBook, index),
+				canPair && isSpread(name, currentBook, index),
+				canPair && isSpread(name, currentBook, index + 1)
 			]);
+			const two = canPair && !leftIsSpread && !rightIsSpread;
+			const right = two ? await getPageUrl(name, currentBook, index + 1) : undefined;
+			if (cancelled) return;
 
-			const imgIsTwoPageSpread = oneIs || twoIs;
-			showingTwoPages = landscape && current !== 0 && current !== last && !imgIsTwoPageSpread;
+			view = { key, left, right, two };
+
+			// Warm up the next pages so turning forward is instant.
+			const next = index + (two ? 2 : 1);
+			void getPageUrl(name, currentBook, next);
+			void getPageUrl(name, currentBook, next + 1);
 		})();
+
+		return () => {
+			cancelled = true;
+		};
 	});
 
-	async function goLeft() {
-		const previousPageUrl = await pages.getPage($books, $bookName, $pageNumber - 1);
-		const previousPageIsTwoPageSpread = await isTwoPageSpread(previousPageUrl);
-		const numberOfPagesToGoBack = $isLandscapeMode ? (previousPageIsTwoPageSpread ? 1 : 2) : 1;
-
-		const previousPage =
-			$pageNumber - numberOfPagesToGoBack <= 0 ? 0 : $pageNumber - numberOfPagesToGoBack;
-
-		books.updateLastPage($bookName, previousPage);
-		goto(
-			resolve('/book/[bookName]/page/[pageNumber]', {
-				bookName: $bookName,
-				pageNumber: String(previousPage)
-			})
+	function show(index: number) {
+		const target = Math.min(Math.max(index, 0), lastIndex);
+		if (target === pageNumber) return;
+		books.updateLastPage(bookName, target);
+		// Replace, so the back button returns to the library instead of stepping through pages.
+		void goto(
+			resolve('/book/[bookName]/page/[pageNumber]', { bookName, pageNumber: String(target) }),
+			{ replace: true }
 		);
 	}
 
-	async function goRight() {
-		const numberOfPagesToIncrement = showingTwoPages ? 2 : 1;
-		const nextPage =
-			$pageNumber + numberOfPagesToIncrement >= $lastPage
-				? $pageNumber
-				: $pageNumber + numberOfPagesToIncrement;
+	function next() {
+		const showingTwo = view?.key === currentKey && view.two;
+		if (showingTwo && pageNumber + 1 >= lastIndex) return;
+		show(pageNumber + (showingTwo ? 2 : 1));
+	}
 
-		if (nextPage !== $pageNumber) {
-			await Promise.all([
-				pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement),
-				pages.getPage($books, $bookName, $pageNumber + numberOfPagesToIncrement + 1)
+	async function previous() {
+		if (pageNumber === 0 || !book) return;
+		let step = 1;
+		// In landscape, step back over a pair unless that would split a spread or skip page 1.
+		if ($isLandscapeMode && pageNumber - 2 >= 1) {
+			const [a, b] = await Promise.all([
+				isSpread(bookName, book, pageNumber - 1),
+				isSpread(bookName, book, pageNumber - 2)
 			]);
+			if (!a && !b) step = 2;
+		}
+		show(pageNumber - step);
+	}
 
-			books.updateLastPage($bookName, nextPage);
-			goto(
-				resolve('/book/[bookName]/page/[pageNumber]', {
-					bookName: $bookName,
-					pageNumber: String(nextPage)
-				})
-			);
+	function onKeydown(event: KeyboardEvent) {
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
+		const forward = ['ArrowRight', 'ArrowUp', 'PageDown', ' ', 'Enter'];
+		const backward = ['ArrowLeft', 'ArrowDown', 'PageUp', 'Backspace'];
+		if (forward.includes(event.key)) {
+			event.preventDefault();
+			next();
+		} else if (backward.includes(event.key)) {
+			event.preventDefault();
+			void previous();
 		}
 	}
 
-	function onArrow({ key, code }: KeyboardEvent) {
-		if (key === 'ArrowLeft' || key === 'ArrowDown' || key === 'Enter') {
-			goLeft();
-		}
-
-		if (key === 'ArrowRight' || key === 'ArrowUp' || code === 'Space') {
-			goRight();
-		}
-	}
-
-	let pageContainer: HTMLButtonElement | undefined = $state();
-	function onClick(event: MouseEvent) {
-		if (pageContainer) {
-			const { left, width } = pageContainer.getBoundingClientRect();
-
-			if (event.clientX - left < width / 2) {
-				goLeft();
-			} else {
-				goRight();
-			}
+	let reader: HTMLElement | undefined = $state();
+	function onTap(event: MouseEvent) {
+		const { left, width } =
+			event.currentTarget instanceof HTMLElement
+				? event.currentTarget.getBoundingClientRect()
+				: { left: 0, width: window.innerWidth };
+		if (event.clientX - left < width / 2) {
+			void previous();
+		} else {
+			next();
 		}
 	}
 
-	let fullscreenWrapper: HTMLDivElement | undefined = $state();
-	function onFullscreen() {
-		fullscreenWrapper?.requestFullscreen();
+	function toggleFullscreen() {
+		if (document.fullscreenElement) {
+			void document.exitFullscreen();
+		} else {
+			void reader?.requestFullscreen();
+		}
 	}
+
+	const position = $derived(
+		view?.two && !loading
+			? `${pageNumber + 1}–${pageNumber + 2} of ${pageCount}`
+			: `${pageNumber + 1} of ${pageCount}`
+	);
 </script>
 
 <svelte:head>
-	<title>{$bookName} - Comic Reader</title>
+	<title>{bookName} - Comic Reader</title>
 </svelte:head>
 
-<a href={resolve('/book/[bookName]', { bookName: $bookName })}>Pages</a>
-{#if supportsFullscreen}
-	<button onclick={onFullscreen}>Fullscreen</button>
+<svelte:window onkeydown={onKeydown} />
+
+{#if book}
+	<div class="reader" bind:this={reader}>
+		<header>
+			<a href={resolve('/books')}>Library</a>
+			<a href={resolve('/book/[bookName]', { bookName })}>Pages</a>
+			<span class="position" aria-live="polite">{position}</span>
+			{#if supportsFullscreen}
+				<button onclick={toggleFullscreen}>Fullscreen</button>
+			{/if}
+		</header>
+
+		<button
+			class="pages"
+			class:two={view?.two}
+			class:loading
+			onclick={onTap}
+			aria-label="Tap the left half for the previous page, the right half for the next"
+		>
+			{#if view}
+				{#if view.left}
+					<img src={view.left} alt="Page {pageNumber + 1}" draggable="false" />
+				{:else}
+					<span class="missing">This page couldn't be read.</span>
+				{/if}
+				{#if view.two && view.right}
+					<img src={view.right} alt="Page {pageNumber + 2}" draggable="false" />
+				{/if}
+			{/if}
+			{#if loading}
+				<span class="loader" role="status">Loading page…</span>
+			{/if}
+		</button>
+	</div>
+{:else if loaded}
+	<p class="not-found">
+		This book isn't in your library on this device. <a href={resolve('/books')}>Go to library</a>
+	</p>
 {/if}
-<svelte:window onkeyup={onArrow} />
-<div bind:this={fullscreenWrapper} class="fullscreen-wrapper">
-	<button bind:this={pageContainer} class="page-container" class:showingTwoPages onclick={onClick}>
-		{#await $leftPage}
-			<div class="loader" style="grid-area: page1;">Loading...</div>
-		{:then page}
-			<img style="grid-area: page1;" src={page} alt="" />
-		{/await}
-		{#if showingTwoPages}
-			{#await $rightPage}
-				<div class="loader" style="grid-area: page2;">Loading...</div>
-			{:then page}
-				<img style="grid-area: page2;" src={page} alt="" />
-			{/await}
-		{/if}
-		<div class="page-marker">{$pageNumber} / {$lastPage - 1}</div>
-	</button>
-</div>
 
 <style>
-	.fullscreen-wrapper:fullscreen {
-		overflow: auto;
-		background-color: var(--bg);
+	.reader {
+		display: grid;
+		grid-template-rows: auto 1fr;
+		height: 100dvh;
+		background: var(--bg);
 	}
 
-	.page-container {
+	header {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.25rem 0.5rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.position {
+		margin-left: auto;
+		color: var(--text-muted);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.pages {
 		appearance: none;
 		border: none;
-		background-color: transparent;
-		display: grid;
-		column-gap: 0.5rem;
-		width: 100%;
 		padding: 0;
-		grid-template-columns: 1fr min-content 1fr;
-		grid-template-areas: 'space1 page1 space2';
-	}
-
-	.page-container:fullscreen {
-		overflow: auto;
-	}
-
-	.showingTwoPages {
-		grid-template-columns: 1fr min-content min-content 1fr;
-		grid-template-areas: 'space1 page1 page2 space2';
-	}
-
-	.loader {
-		align-self: center;
-	}
-
-	.page-marker {
-		grid-area: space2;
-		justify-self: start;
-		align-self: end;
-		padding-bottom: 1rem;
+		margin: 0;
+		background: transparent;
+		color: inherit;
+		font: inherit;
+		min-height: 0;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.25rem;
+		position: relative;
+		cursor: pointer;
+		overflow: hidden;
+		-webkit-tap-highlight-color: transparent;
+		touch-action: manipulation;
 	}
 
 	img {
-		max-height: calc(100vh - 42px);
-		min-height: calc(100vh - 42px);
+		max-height: 100%;
+		max-width: 100%;
+		object-fit: contain;
+		user-select: none;
+	}
+
+	.two img {
+		max-width: 50%;
+	}
+
+	.loading img {
+		opacity: 0.5;
+	}
+
+	.loader,
+	.missing {
+		position: absolute;
+		inset: auto 0 1rem;
+		color: var(--text-muted);
+	}
+
+	.missing {
+		position: static;
+	}
+
+	.not-found {
+		padding: 2rem 1rem;
 	}
 </style>

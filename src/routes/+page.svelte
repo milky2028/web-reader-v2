@@ -1,67 +1,81 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { countUpload } from '#lib/analytics.ts';
-	import { extractBook } from '#lib/extractBook.ts';
+	import { isArchiveFile } from '#lib/archive-paths.ts';
+	import { addBook } from '#lib/extract/addBook.ts';
+	import { failures } from '#lib/stores/failures.ts';
 	import { onMount } from 'svelte';
 
-	const acceptedFileTypes = [
-		// zip
+	const accept = [
 		'.cbz',
 		'.zip',
 		'application/zip',
 		'application/x-zip-compressed',
-		'multipart/x-zip',
-		// rar
 		'.cbr',
+		'.rar',
 		'application/vnd.rar',
-		'application/x-rar-compressed',
-		// both
-		'application/octet-stream'
-	];
+		'application/x-rar-compressed'
+	].join();
 
-	function onDragover(event: DragEvent) {
-		event.preventDefault();
+	let opening = $state(false);
+	let dragging = $state(false);
 
-		if (event.dataTransfer) {
-			event.dataTransfer.dropEffect = 'copy';
+	async function open(files: File[]) {
+		for (const file of files.filter((file) => !isArchiveFile(file.name))) {
+			failures.report(file.name, 'only .cbz, .cbr, .zip and .rar files can be opened');
 		}
-	}
 
-	function getFiles(event: DragEvent | (Event & { currentTarget: HTMLInputElement })) {
-		const files =
-			event instanceof DragEvent ? event.dataTransfer?.files : event.currentTarget.files;
-		return Array.from(files ?? []).filter((file) => file.name.match(/.cbr|.cbz|.rar|.zip$/));
-	}
+		const archives = files.filter((file) => isArchiveFile(file.name));
+		if (archives.length === 0) {
+			return;
+		}
 
-	async function onUpload(files: File[]) {
-		await navigator.storage.persist();
+		opening = true;
+		void navigator.storage?.persist?.();
 
-		const extractions = files.map(async (file) => {
-			const bookName = file.name.slice(0, file.name.length - 4).replace('#', '');
+		const added = archives.map((file) => {
 			countUpload(file);
-			await extractBook({ bookName, file });
-
-			return bookName;
+			const book = addBook(file);
+			book.firstPage.catch((error: unknown) =>
+				failures.report(file.name, error instanceof Error ? error.message : String(error))
+			);
+			return book;
 		});
 
-		const [bookName] = await Promise.all(extractions);
-		if (files.length === 1) {
-			goto(
-				resolve('/book/[bookName]/page/[pageNumber]', { bookName: bookName, pageNumber: String(0) })
-			);
-		} else if (files.length > 0) {
-			goto(resolve('/books'));
+		try {
+			const [only] = added;
+			if (added.length === 1 && only) {
+				// Start reading as soon as the first page exists; the rest extracts in the background.
+				await only.firstPage;
+				await goto(
+					resolve('/book/[bookName]/page/[pageNumber]', {
+						bookName: only.bookName,
+						pageNumber: '0'
+					})
+				);
+			} else {
+				await Promise.any(added.map((book) => book.firstPage));
+				await goto(resolve('/books'));
+			}
+		} catch {
+			// Already reported through `failures`.
+		} finally {
+			opening = false;
 		}
+	}
+
+	function onDrop(event: DragEvent) {
+		event.preventDefault();
+		dragging = false;
+		void open([...(event.dataTransfer?.files ?? [])]);
 	}
 
 	onMount(() => {
-		if ('launchQueue' in window) {
-			window.launchQueue.setConsumer(async ({ files }) => {
-				const fileData = await Promise.all(files.map((fileHandle) => fileHandle.getFile()));
-				onUpload(fileData);
-			});
-		}
+		// Opening a .cbz/.cbr from the OS when the app is installed (PWA file handler).
+		window.launchQueue?.setConsumer(async ({ files }) => {
+			void open(await Promise.all(files.map((handle) => handle.getFile())));
+		});
 	});
 </script>
 
@@ -69,38 +83,79 @@
 	<title>Comic Reader</title>
 </svelte:head>
 
-<div class="container">
-	<div
-		role="button"
-		tabindex="0"
-		ondragover={onDragover}
-		ondrop={(event) => onUpload(getFiles(event))}
-		class="drop-zone"
-	>
-		<input
-			onchange={(event) => onUpload(getFiles(event))}
-			type="file"
-			accept={acceptedFileTypes.join()}
-			multiple
-		/>
-	</div>
-</div>
+<section
+	class="drop-zone"
+	class:dragging
+	aria-label="Add books"
+	ondragover={(event) => {
+		event.preventDefault();
+		dragging = true;
+		if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy';
+	}}
+	ondragleave={() => (dragging = false)}
+	ondrop={onDrop}
+>
+	{#if opening}
+		<p class="status" role="status">Opening…</p>
+	{:else}
+		<label class="choose">
+			Choose comics
+			<input
+				type="file"
+				{accept}
+				multiple
+				onchange={(event) => {
+					void open([...(event.currentTarget.files ?? [])]);
+					event.currentTarget.value = '';
+				}}
+			/>
+		</label>
+		<p class="hint">or drop .cbz, .cbr, .zip or .rar files here</p>
+	{/if}
+</section>
 
 <style>
-	.container {
-		position: absolute;
+	.drop-zone {
 		display: grid;
-		place-items: center;
-		width: 100%;
-		height: 100%;
+		place-content: center;
+		justify-items: center;
+		gap: 1rem;
+		min-height: calc(100dvh - 8rem);
+		margin: 1rem;
+		border: 2px dashed var(--border);
+		border-radius: 1rem;
+		text-align: center;
 	}
 
-	.drop-zone {
-		border-radius: 1rem;
-		display: grid;
-		place-items: center;
-		border: 2px dashed var(--border);
-		width: 50%;
-		height: 50%;
+	.dragging {
+		border-color: var(--accent);
+		background: var(--surface);
+	}
+
+	.choose {
+		display: inline-block;
+		padding: 0.75rem 1.5rem;
+		border-radius: 0.75rem;
+		background: var(--accent);
+		color: white;
+		cursor: pointer;
+	}
+
+	.choose input {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		opacity: 0;
+	}
+
+	.choose:focus-within {
+		outline: 2px solid var(--link);
+		outline-offset: 2px;
+	}
+
+	.hint,
+	.status {
+		margin: 0;
+		color: var(--text-muted);
 	}
 </style>
