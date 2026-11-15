@@ -27,14 +27,14 @@
 		position: absolute;
 		top: 0;
 		width: 100vw;
-		border: 1px solid white;
+		border: 1px solid var(--bg);
 	}
 
 	progress::-moz-progress-bar {
-		background-color: #007ba7;
+		background-color: var(--accent);
 	}
 
 	progress::-webkit-progress-value {
-		background-color: #007ba7;
+		background-color: var(--accent);
 	}
 </style>

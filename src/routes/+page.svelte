@@ -97,7 +97,7 @@
 		border-radius: 1rem;
 		display: grid;
 		place-items: center;
-		border: 1px solid black;
+		border: 2px dashed var(--border);
 		width: 50%;
 		height: 50%;
 	}

@@ -150,6 +150,7 @@
 <style>
 	.fullscreen-wrapper:fullscreen {
 		overflow: auto;
+		background-color: var(--bg);
 	}
 
 	.page-container {
