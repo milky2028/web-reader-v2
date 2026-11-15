@@ -3,7 +3,9 @@
   publish = "build"
 
 [build.environment]
-  NODE_VERSION = "24"
+  # Node 26 "Lithium" is the Active LTS (supported until 2029-04-30). Set here, not only in
+  # .nvmrc, because this overrides the Node version chosen in the Netlify dashboard.
+  NODE_VERSION = "26"
   # Usage counting (src/lib/analytics.ts). Empty = off. Set to your GoatCounter site, e.g.
   # "https://<code>.goatcounter.com/count"
   VITE_GOATCOUNTER_ENDPOINT = ""
