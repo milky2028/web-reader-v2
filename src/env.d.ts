@@ -1,1 +1,1 @@
-declare const __IS_DEV__: string;
+declare const __IS_DEV__: boolean;

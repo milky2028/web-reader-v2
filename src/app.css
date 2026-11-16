@@ -1,3 +1,19 @@
+/*
+ * Colors follow the operating system's light/dark setting via `color-scheme` and
+ * `light-dark()`. Every color in the app should come from one of these tokens.
+ */
+:root {
+	color-scheme: light dark;
+
+	--accent: #007ba7;
+	--bg: light-dark(#ffffff, #121212);
+	--surface: light-dark(#f2f4f5, #1e2124);
+	--text: light-dark(#16181a, #e6e8ea);
+	--text-muted: light-dark(#5b6168, #a2a9b0);
+	--border: light-dark(#c9ced3, #3a3f44);
+	--link: light-dark(#006a91, #6cc7ec);
+}
+
 html,
 body {
 	padding: 0;
@@ -5,6 +21,52 @@ body {
 	border: 0;
 }
 
+body {
+	background-color: var(--bg);
+	color: var(--text);
+	font-family: system-ui, sans-serif;
+}
+
+a {
+	color: var(--link);
+}
+
 * {
 	box-sizing: border-box;
+}
+
+/* Touch: everything tappable is at least 48 CSS px (about 9 mm), sized for fingers on a tablet. */
+:root {
+	--touch: 3rem;
+}
+
+@media (pointer: coarse) {
+	html {
+		font-size: 112.5%;
+	}
+}
+
+button,
+.button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	min-height: var(--touch);
+	min-width: var(--touch);
+	padding: 0 1rem;
+	border: 1px solid var(--border);
+	border-radius: 0.75rem;
+	background: var(--surface);
+	color: var(--text);
+	font: inherit;
+	text-decoration: none;
+	cursor: pointer;
+	touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible {
+	outline: 3px solid var(--link);
+	outline-offset: 2px;
 }
