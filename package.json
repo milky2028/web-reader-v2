@@ -39,6 +39,6 @@
 	},
 	"packageManager": "pnpm@12.18.0",
 	"dependencies": {
-		"extract-zip-rar": "github:milky2028/extract#b628397aae035ad96d8af6ec574352ea78e9845c"
+		"extract-zip-rar": "github:milky2028/extract#6eb939b93f41844a1fb9aec3009c8934c543a64e"
 	}
 }
