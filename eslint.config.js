@@ -27,5 +27,11 @@ export default ts.config(
 			eqeqeq: 'error',
 			'@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }]
 		}
+	},
+	{
+		// End-to-end tests run in Node and drive the browser one step at a time.
+		files: ['e2e/**'],
+		languageOptions: { globals: globals.node },
+		rules: { 'no-await-in-loop': 'off' }
 	}
 );

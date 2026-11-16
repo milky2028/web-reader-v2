@@ -71,7 +71,21 @@
 		void open([...(event.dataTransfer?.files ?? [])]);
 	}
 
+	let fileInput: HTMLInputElement | undefined = $state();
+
+	function openChosen(input: HTMLInputElement) {
+		const files = [...(input.files ?? [])];
+		input.value = '';
+		void open(files);
+	}
+
 	onMount(() => {
+		// The page is prerendered, so on a slow device files can be chosen before this script has
+		// started; their change event is lost. Pick them up now instead of ignoring them.
+		if (fileInput?.files?.length) {
+			openChosen(fileInput);
+		}
+
 		// Opening a .cbz/.cbr from the OS when the app is installed (PWA file handler).
 		window.launchQueue?.setConsumer(async ({ files }) => {
 			void open(await Promise.all(files.map((handle) => handle.getFile())));
@@ -101,13 +115,11 @@
 		<label class="choose">
 			Choose comics
 			<input
+				bind:this={fileInput}
 				type="file"
 				{accept}
 				multiple
-				onchange={(event) => {
-					void open([...(event.currentTarget.files ?? [])]);
-					event.currentTarget.value = '';
-				}}
+				onchange={(event) => openChosen(event.currentTarget)}
 			/>
 		</label>
 		<p class="hint">or drop .cbz, .cbr, .zip or .rar files here</p>

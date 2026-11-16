@@ -1,42 +1,33 @@
-# create-svelte
+# Comic Reader
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/master/packages/create-svelte).
+[comic-reader.com](https://comic-reader.com): read `.cbz`, `.cbr`, `.zip` and `.rar` comics in the browser. Books are extracted on the device (libarchive compiled to WebAssembly, [extract-zip-rar](https://github.com/milky2028/extract)) and kept in the browser's private file system (OPFS). Nothing is uploaded anywhere.
 
-## Creating a project
+## Develop
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+```sh
+pnpm install
+pnpm dev
 ```
 
-## Developing
+Node 26 (see `.nvmrc`) and pnpm.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Test
 
-```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```sh
+pnpm verify        # prettier, eslint, svelte-check, unit tests (vitest), production build
+pnpm test:e2e      # end-to-end tests in headless Chrome, against the production build
 ```
 
-## Building
+The end-to-end tests start the built app and a throwaway headless Chrome (set `CHROME_PATH` if it isn't found), generate small comics on the fly, and pick them through the real file input. They cover reading order, landscape page pairing, touch taps and swipes at tablet size, 48 px touch targets, the light/dark theme, error reporting, and the library surviving reloads and deletions. They need the `zip` command.
 
-To create a production version of your app:
+To check big archives of your own (first page time, total time, browser memory, every page stored):
 
-```bash
-npm run build
+```sh
+pnpm build && E2E_ARCHIVES="/path/to/big.cbz:/path/to/book.cbr" pnpm test:e2e
 ```
 
-## Compressing Files
+## Deploy
 
-Native MacOS and Windows compression tools try to use deflate to compress files, but this corrupts files for some reason. To compress, use `zip` on the command line: `zip -0 -r mydir.zip mydir`.
+Netlify builds `main` with `pnpm build` and publishes `build/` (see `netlify.toml`). Pull requests get deploy previews.
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+Usage counting (GoatCounter, cookie-less, route patterns only) is off until `VITE_GOATCOUNTER_ENDPOINT` is set in `netlify.toml`.

@@ -17,7 +17,8 @@
 		"test": "vitest run",
 		"lint": "prettier --check . && eslint .",
 		"format": "prettier --write .",
-		"verify": "pnpm lint && pnpm check && pnpm test && pnpm build"
+		"verify": "pnpm lint && pnpm check && pnpm test && pnpm build",
+		"test:e2e": "node --test --test-concurrency=1 e2e/"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",
